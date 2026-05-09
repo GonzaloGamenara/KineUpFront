@@ -1,7 +1,7 @@
 import React from "react";
 
 const Pacientes = () => {
-  // Datos de ejemplo basados en tu imagen
+
   const data = [
     {
       nombre: "Gonzalo Gamenara",
@@ -160,7 +160,7 @@ const Pacientes = () => {
 
       <div className="overflow-hidden rounded-xl border border-primary/20 shadow-sm">
         <table className="w-full text-left border-collapse bg-white">
-          {/* Encabezado */}
+
           <thead className="bg-[#e9f5ee] text-primary text-4xl">
             <tr>
               <th className="p-4 font-bold border-b border-primary/20">
@@ -182,7 +182,7 @@ const Pacientes = () => {
             </tr>
           </thead>
 
-          {/* Cuerpo de la tabla */}
+
           <tbody className="text-primary-dark font-medium text-3xl">
             {data.map((paciente, index) => (
               <tr

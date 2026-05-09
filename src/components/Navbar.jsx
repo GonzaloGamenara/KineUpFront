@@ -3,7 +3,6 @@ import profileIcon from "/public/profile.svg";
 import logoutIcon from "/public/logout.svg";
 
 function Navbar({ setSolapaActiva, solapaActiva }) {
-  // Clase base para los items del menú central
   const itemClass =
     "cursor-pointer transition-all duration-300 ease-in-out select-none";
 
@@ -46,9 +45,8 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
           </li>
         </div>
 
-        {/* Lado Derecho: Perfil y Logout */}
         <div className="flex gap-8 items-center h-full">
-          {/* Perfil */}
+
           <li className="hover:scale-110 transition-transform cursor-pointer">
             <button
               onClick={() => setSolapaActiva("profile")}
@@ -63,7 +61,7 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
             </button>
           </li>
 
-          {/* Logout (Aquí podrías usar una función de logout real o redirigir) */}
+
           <li className="hover:scale-125 transition-transform cursor-pointer group">
             <a href="/login">
               <img
