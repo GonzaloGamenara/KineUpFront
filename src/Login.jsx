@@ -1,58 +1,141 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
 
+  // Iniciamos en "paciente" para que siempre haya uno seleccionado (requisito mínimo 1)
+  const [usertype, setUserType] = useState("paciente");
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // --- EL IF DINÁMICO ---
+    // Decidimos la URL según el estado actual
+    const urlFinal = usertype === "paciente" 
+      ? "http://192.168.1.101:5000/api/User/registrar/paciente" 
+      : "http://192.168.1.101:5000/api/User/registrar/profesional";
+
+    try {
+      const response = await fetch(urlFinal, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          email: email,
+          password: password
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        console.log(`Registro exitoso como ${usertype}:`, data);
+        alert("¡Cuenta creada con éxito!");
+        navigate("/home");
+      } else {
+        setError(data.message || "Error al registrar el usuario");
+      }
+    } catch (err) {
+      console.error("Error en el fetch:", err);
+      setError("No hay conexión con el servidor (revisa la IP y el Wi-Fi)");
+    }
+  };
+
   return (
-    <div className="h-screen flex items-center justify-center font-poppins">
+    <div className="h-screen flex items-center justify-center font-poppins bg-gray-100">
       <div className="bg-white p-10 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold mb-6 text-center text-[#007a3f]">
-          Iniciar Sesión
+          Crear Cuenta
         </h2>
-        <form>
+        
+        {error && <p className="text-red-500 text-xs italic mb-4 bg-red-50 p-2 rounded">{error}</p>}
+
+        <form onSubmit={handleRegister}>
           <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="username"
-            >
-              Nombre de Usuario
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Nombre Completo</label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="username"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
               type="text"
-              placeholder="Nombre de Usuario"
+              placeholder="Juan Pérez"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
             />
           </div>
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Contraseña
-            </label>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="password"
-              type="password"
-              placeholder="Contraseña"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
-          <div className="flex items-center justify-between">
+
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* SECCIÓN DE CHECKBOXES MEJORADA */}
+          <div className="flex gap-6 items-center justify-center mb-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 accent-[#007a3f]"
+                checked={usertype === "paciente"} 
+                onChange={() => setUserType("paciente")} 
+              />
+              <span className={`text-sm ${usertype === "paciente" ? "font-bold text-[#007a3f]" : "text-gray-500"}`}>
+                Paciente
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 accent-[#007a3f]"
+                checked={usertype === "profesional"} 
+                onChange={() => setUserType("profesional")} 
+              />
+              <span className={`text-sm ${usertype === "profesional" ? "font-bold text-[#007a3f]" : "text-gray-500"}`}>
+                Profesional
+              </span>
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-3">
             <button
-              className="bg-[#007a3f] hover:bg-[#005a2f] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="button"
-              onClick={() => navigate("/home")}
+              className="bg-[#007a3f] hover:bg-[#005a2f] text-white font-bold py-2 px-4 rounded transition-colors"
+              type="submit"
             >
-              Iniciar Sesión
+              Registrar {usertype === "paciente" ? "Paciente" : "Profesional"}
             </button>
             <button
-              className="bg-[#007a3f] hover:bg-[#005a2f] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="text-sm text-gray-500 hover:underline"
               type="button"
-              onClick={() => navigate("/home")}
+              onClick={() => navigate("/login")}
             >
-              Registrarse
+              ¿Ya tienes cuenta? Inicia sesión
             </button>
           </div>
         </form>
