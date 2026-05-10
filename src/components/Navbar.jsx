@@ -57,7 +57,7 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
                 alt="Profile Icon"
                 className="w-10 h-10 rounded-full"
               />
-              <span className="text-xl hidden md:block">Dr. R. Rodriguez</span>
+              <span className="text-xl hidden md:block">Lic. R. Rodriguez</span>
             </button>
           </li>
 
