@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from './assets/logo.png'
 
 function Login() {
   const navigate = useNavigate();
@@ -51,8 +52,11 @@ function Login() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center font-poppins bg-gray-100">
-      <div className="bg-white p-10 rounded-lg shadow-lg w-96">
+    <div className="h-screen flex items-center justify-center font-poppins bg-linear-to-br from-green-50 to-green-200">
+      <div className="bg-white px-10 py-2 rounded-lg shadow-lg w-96">
+        <div className="mb-1 text-center">
+        <img src={logo} alt="KineUp" className="h-30 mx-auto" />
+        </div>
         <h2 className="text-2xl font-bold mb-6 text-center text-[#007a3f]">
           Crear Cuenta
         </h2>
