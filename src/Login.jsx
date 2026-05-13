@@ -9,6 +9,7 @@ function Login() {
   const [usertype, setUserType] = useState("paciente");
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -18,9 +19,7 @@ function Login() {
 
     // --- EL IF DINÁMICO ---
     // Decidimos la URL según el estado actual
-    const urlFinal = usertype === "paciente" 
-      ? "http://192.168.1.101:5000/api/User/registrar/paciente" 
-      : "http://192.168.1.101:5000/api/User/registrar/profesional";
+    const urlFinal = "http://192.168.1.101:5000/api/Auth/login" 
 
     try {
       const response = await fetch(urlFinal, {
@@ -30,8 +29,9 @@ function Login() {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          nombre: nombre,
-          email: email,
+          //nombre: nombre,
+          //email: email,
+          usuario: usuario,
           password: password
         }),
       });
@@ -39,8 +39,7 @@ function Login() {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        console.log(`Registro exitoso como ${usertype}:`, data);
-        alert("¡Cuenta creada con éxito!");
+        alert(data);
         navigate("/home");
       } else {
         setError(data.message || "Error al registrar el usuario");
@@ -53,37 +52,24 @@ function Login() {
 
   return (
     <div className="h-screen flex items-center justify-center font-poppins bg-linear-to-br from-green-50 to-green-200">
-      <div className="bg-white px-10 py-2 rounded-lg shadow-lg w-96">
-        <div className="mb-1 text-center">
-        <img src={logo} alt="KineUp" className="h-30 mx-auto" />
+      <div className="bg-white px-10 py-6 rounded-lg shadow-lg w-96">
+        
+        <div className="text-center mb-2">
+          <img src={logo} alt="KineUp" className="h-30 mx-auto" />
         </div>
-        <h2 className="text-2xl font-bold mb-6 text-center text-[#007a3f]">
-          Crear Cuenta
-        </h2>
         
         {error && <p className="text-red-500 text-xs italic mb-4 bg-red-50 p-2 rounded">{error}</p>}
 
         <form onSubmit={handleRegister}>
+
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Nombre Completo</label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Usuario</label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
               type="text"
-              placeholder="Juan Pérez"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
-              type="email"
-              placeholder="correo@ejemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Ingresá tu usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
               required
             />
           </div>
@@ -93,7 +79,7 @@ function Login() {
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-[#007a3f]"
               type="password"
-              placeholder="********"
+              placeholder="**********"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -101,7 +87,7 @@ function Login() {
           </div>
 
           {/* SECCIÓN DE CHECKBOXES MEJORADA */}
-          <div className="flex gap-6 items-center justify-center mb-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+          {/* <div className="flex gap-6 items-center justify-center mb-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
             <label className="flex items-center gap-2 cursor-pointer">
               <input 
                 type="checkbox" 
@@ -125,21 +111,21 @@ function Login() {
                 Profesional
               </span>
             </label>
-          </div>
+          </div> */}
 
           <div className="flex flex-col gap-3">
             <button
               className="bg-[#007a3f] hover:bg-[#005a2f] text-white font-bold py-2 px-4 rounded transition-colors"
               type="submit"
             >
-              Registrar {usertype === "paciente" ? "Paciente" : "Profesional"}
+              Iniciar sesión
             </button>
             <button
               className="text-sm text-gray-500 hover:underline"
               type="button"
               onClick={() => navigate("/login")}
             >
-              ¿Ya tienes cuenta? Inicia sesión
+              ¿No tienes cuenta? Registrate aquí
             </button>
           </div>
         </form>
