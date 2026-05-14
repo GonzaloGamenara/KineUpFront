@@ -11,7 +11,7 @@ function LoginPaciente() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  };
+  }; 
 
   return (
     <div className="relative h-screen flex items-center justify-center font-poppins overflow-hidden">

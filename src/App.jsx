@@ -1,8 +1,8 @@
 import { useState } from "react";
 import "./App.css";
-import Navbar from "/src/components/Navbar.jsx";
-import QRSection from "/src/components/QRSection.jsx";
-import Pacientes from "/src/components/Pacientes.jsx";
+import Navbar from "./components/Navbar.jsx";
+import QRSection from "./components/QRSection.jsx";
+import Pacientes from "./components/Pacientes.jsx";
 
 function App() {
   const [solapaActiva, setSolapaActiva] = useState("qr");
@@ -18,8 +18,11 @@ function App() {
           </div>
         )}
 
+        {/* ARREGLO DE PACIENTES: 
+            Añadimos un contenedor con padding para que la lista no pegue contra los bordes 
+        */}
         {solapaActiva === "pacientes" && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in p-6 md:p-10">
             <Pacientes />
           </div>
         )}

@@ -1,18 +1,30 @@
 import React from "react";
-import profileIcon from "/public/profile.svg";
-import logoutIcon from "/public/logout.svg";
+import logo from "/logo_grande.png"; 
+import profileIcon from "/profile.svg";
+import logoutIcon from "/logout.svg";
 
-function Navbar({ setSolapaActiva, solapaActiva }) {
+function Navbar({setSolapaActiva, solapaActiva, nombreKine = "R. Rodriguez" }) {
   const itemClass =
     "cursor-pointer transition-all duration-300 ease-in-out select-none";
 
   return (
-    <nav className="shrink-0 h-25 text-2xl font-bold bg-primary text-white rounded-b-xl animate-slide-down shadow-lg">
-      <ul className="flex justify-between px-20 items-center h-full">
-        <div className="flex gap-4 items-center h-full">
+    <nav className="shrink-0 h-25 text-2xl font-bold bg-[#004d31] text-white rounded-b-xl animate-slide-down shadow-lg">
+      <ul className="flex justify-between px-10 items-center h-full">
+        
+        {/* Contenedor Izquierdo: Logo + Items */}
+        <div className="flex gap-10 items-center h-full">
+          
+          {/* Logo KineUp */}
+          <li 
+            onClick={() => setSolapaActiva("qr")}
+            className="cursor-pointer hover:scale-105 transition-transform mr-4"
+          >
+            <img src={logo} alt="KineUp" className="h-12 w-auto brightness-0 invert" />
+          </li>
+
           <li
             onClick={() => setSolapaActiva("qr")}
-            className={`${itemClass} hover:px-2 hover:scale-120 ${solapaActiva === "qr" ? "scale-120 px-2" : "opacity-80 hover:opacity-100"}`}
+            className={`${itemClass} hover:px-2 hover:scale-120 ${solapaActiva === "qr" ? "scale-120 px-2 text-green-300" : "opacity-80 hover:opacity-100"}`}
           >
             QR
           </li>
@@ -21,7 +33,7 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
 
           <li
             onClick={() => setSolapaActiva("pacientes")}
-            className={`${itemClass} hover:px-4 hover:scale-120 ${solapaActiva === "pacientes" ? "scale-120 px-4" : "opacity-80 hover:opacity-100"}`}
+            className={`${itemClass} hover:px-4 hover:scale-120 ${solapaActiva === "pacientes" ? "scale-120 px-4 text-green-300" : "opacity-80 hover:opacity-100"}`}
           >
             Mis Pacientes
           </li>
@@ -30,7 +42,7 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
 
           <li
             onClick={() => setSolapaActiva("rutinas")}
-            className={`${itemClass} hover:px-4 hover:scale-120 ${solapaActiva === "rutinas" ? "scale-120 px-4" : "opacity-80 hover:opacity-100"}`}
+            className={`${itemClass} hover:px-4 hover:scale-120 ${solapaActiva === "rutinas" ? "scale-120 px-4 text-green-300" : "opacity-80 hover:opacity-100"}`}
           >
             Rutinas
           </li>
@@ -39,14 +51,14 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
 
           <li
             onClick={() => setSolapaActiva("faq")}
-            className={`${itemClass} hover:px-6 hover:scale-120 ${solapaActiva === "faq" ? "scale-120 px-6" : "opacity-80 hover:opacity-100"}`}
+            className={`${itemClass} hover:px-6 hover:scale-120 ${solapaActiva === "faq" ? "scale-120 px-6 text-green-300" : "opacity-80 hover:opacity-100"}`}
           >
             Preguntas Frecuentes
           </li>
         </div>
 
+        {/* Contenedor Derecho: Perfil y Salir */}
         <div className="flex gap-8 items-center h-full">
-
           <li className="hover:scale-110 transition-transform cursor-pointer">
             <button
               onClick={() => setSolapaActiva("profile")}
@@ -55,19 +67,18 @@ function Navbar({ setSolapaActiva, solapaActiva }) {
               <img
                 src={profileIcon}
                 alt="Profile Icon"
-                className="w-10 h-10 rounded-full"
+                className="w-10 h-10 rounded-full bg-white/10"
               />
-              <span className="text-xl hidden md:block">Lic. R. Rodriguez</span>
+              <span className="text-xl hidden md:block">Lic. {nombreKine}</span>
             </button>
           </li>
-
 
           <li className="hover:scale-125 transition-transform cursor-pointer group">
             <a href="/login">
               <img
                 src={logoutIcon}
                 alt="Logout Icon"
-                className="w-10 h-10 group-hover:brightness-125"
+                className="w-10 h-10 invert group-hover:brightness-125"
               />
             </a>
           </li>

@@ -31,8 +31,10 @@ function Login() {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
+        console.log("Login exitoso", data);
+        localStorage.setItem("token", data.token);
         navigate("/home");
-      } else {
+      } else { 
         setError(data.message || "Credenciales incorrectas. Intenta de nuevo.");
       }
     } catch (err) {
