@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "./assets/logo.png";
-import AnimatedBackground from "./components/AnimatedBackground.jsx";
+import logo from "../../assets/logo.png";
+import AnimatedBackground from "../../components/layout/AnimatedBackground.jsx";
 
 function Login() {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ function Login() {
         console.log("Login exitoso", data);
         localStorage.setItem("token", data.token);
         navigate("/home");
-      } else { 
+      } else {
         setError(data.message || "Credenciales incorrectas. Intenta de nuevo.");
       }
     } catch (err) {
@@ -54,16 +54,21 @@ function Login() {
         speed={3}
       />
       <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-4xl flex animate-fade-in z-10 overflow-hidden mx-4">
-        
         {/* Panel izquierdo - Formulario */}
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center px-10 py-12 gap-6 bg-white/50">
-          <img src={logo} alt="KineUp" className="h-14 hover:scale-105 transition-transform duration-300" />
-          
+          <img
+            src={logo}
+            alt="KineUp"
+            className="h-14 hover:scale-105 transition-transform duration-300"
+          />
+
           <div className="text-center animate-fade-in [animation-delay:500ms]">
             <h1 className="select-none text-3xl font-bold text-green-900">
               Gestión Profesional
             </h1>
-            <p className="text-gray-500 text-sm mt-1">Ingresá a tu panel de control</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Ingresá a tu panel de control
+            </p>
           </div>
 
           {error && (
@@ -111,16 +116,16 @@ function Login() {
         {/* Panel derecho - Bienvenida */}
         <div className="hidden md:flex w-1/2 bg-[#007a3f] flex-col justify-center items-center gap-6 px-12 py-12 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 tracking-tighter"></div>
-          
+
           <h1 className="select-none text-4xl font-bold text-center text-white animate-fade-in [animation-delay:900ms]">
             ¡Hola!
           </h1>
           <p className="select-none text-green-50 text-center leading-relaxed animate-fade-in [animation-delay:1000ms]">
             Todo listo para seguir impulsando la recuperación de tus pacientes.
           </p>
-          
+
           <div className="w-1/2 border-t border-white/20 my-2"></div>
-          
+
           <p className="select-none text-white/80 text-sm animate-fade-in [animation-delay:1100ms]">
             ¿Eres nuevo en la plataforma?
           </p>
@@ -131,7 +136,6 @@ function Login() {
             Crear mi cuenta
           </button>
         </div>
-
       </div>
     </div>
   );

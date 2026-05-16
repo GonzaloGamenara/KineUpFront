@@ -1,8 +1,7 @@
 import { useState } from "react";
-import "./App.css";
-import Navbar from "./components/Navbar.jsx";
-import QRSection from "./components/QRSection.jsx";
-import Pacientes from "./components/Pacientes.jsx";
+import Navbar from "./components/layout/Navbar.jsx";
+import QRSection from "./features/professional/QRSection.jsx";
+import Pacientes from "./features/professional/Pacientes.jsx";
 
 function App() {
   const [solapaActiva, setSolapaActiva] = useState("qr");
