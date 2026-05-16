@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import AnimatedBackground from "../../components/layout/AnimatedBackground.jsx";
-import { stringify } from "jkt";
 
 function Register() {
   const navigate = useNavigate();
