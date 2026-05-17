@@ -1,47 +1,63 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-import AnimatedBackground from "../../components/layout/AnimatedBackground.jsx";
+import { httpClient } from "../../api/httpClient.js";
+import AnimatedBackground from "../layout/AnimatedBackground.jsx";
+import { useAuth } from "../../auth/AuthContext";
 
-function LoginPaciente() {
+function Login() {
+
+  const { login } = useAuth();
+
   const navigate = useNavigate();
+
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
+
     e.preventDefault();
+
     setError("");
 
-    const urlLogin = "http://192.168.1.101:5000/api/Auth/login";
-
     try {
-      const response = await fetch(urlLogin, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          usuario: usuario,
-          password: password,
-        }),
+
+      const data = await httpClient.post("/api/Auth/login", {
+        usuario,
+        password,
       });
 
-      const data = await response.json().catch(() => ({}));
+      const roles = data?.userData?.roles ?? [];
 
-      if (response.ok) {
-        console.log("Login exitoso", data);
-        localStorage.setItem("token", data.token);
-        navigate("/home-paciente");
-      } else {
-        setError(data.message || "Credenciales incorrectas. Intenta de nuevo.");
+      if (!data?.token || !roles.length) {
+        setError("Credenciales inválidas.");
+        return;
       }
+
+      login(data);
+
+      if (roles.includes("Admin")) {
+        navigate("/admin/home");
+      }
+      else if (roles.includes("Profesional")) {
+        navigate("/profesional/home");
+      }
+      else if (roles.includes("Paciente")) {
+        navigate("/paciente/home");
+      }
+      else {
+        navigate("/sin-acceso");
+      }
+
     } catch (err) {
-      console.error("Error en el fetch:", err);
-      setError("Sin conexión con el servidor. Verifica tu red.");
+
+      console.error(err);
+
+      setError("Sin conexión con el servidor.");
     }
   };
+
   return (
     <div className="relative h-screen flex items-center justify-center font-poppins overflow-hidden">
       <AnimatedBackground
@@ -64,9 +80,9 @@ function LoginPaciente() {
           <h1 className="text-3xl font-bold text-green-900 leading-tight">
             ¡Qué bueno verte!
           </h1>
-          <p className="text-gray-600 text-sm mt-1">
+          {/* <p className="text-gray-600 text-sm mt-1">
             Inicia sesión para comenzar con tu rutina
-          </p>
+          </p> */}
         </div>
 
         {error && (
@@ -107,7 +123,7 @@ function LoginPaciente() {
             className="bg-[#007a3f] hover:bg-[#005a2f] active:scale-95 text-white font-bold py-3 rounded-lg transition-all mt-2 shadow-md hover:shadow-lg flex justify-center items-center"
             type="submit"
           >
-            Comenzar rutina
+            Iniciar Sesión
           </button>
         </form>
 
@@ -139,6 +155,6 @@ function LoginPaciente() {
       </div>
     </div>
   );
-}
+};
 
-export default LoginPaciente;
+export default Login;
