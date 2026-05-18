@@ -41,7 +41,7 @@ function Login() {
         navigate("/admin/home");
       }
       else if (roles.includes("Profesional")) {
-        navigate("/profesional/home");
+        navigate("/profesional/qr");
       }
       else if (roles.includes("Paciente")) {
         navigate("/paciente/home");
@@ -120,7 +120,7 @@ function Login() {
           </div>
 
           <button
-            className="bg-[#007a3f] hover:bg-[#005a2f] active:scale-95 text-white font-bold py-3 rounded-lg transition-all mt-2 shadow-md hover:shadow-lg flex justify-center items-center"
+            className="bg-[#007a3f] hover:bg-[#005a2f] active:scale-95 text-white font-bold py-3 rounded-lg transition-all mt-2 shadow-md hover:shadow-lg flex justify-center items-center cursor-pointer "
             type="submit"
           >
             Iniciar Sesión

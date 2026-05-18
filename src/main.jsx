@@ -5,9 +5,9 @@ import "./index.css";
 import AppRoutes from "./routes/AppRoutes";
 
 createRoot(document.getElementById("root")).render(
+  <AuthProvider>
   <BrowserRouter>
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <AppRoutes />
   </BrowserRouter>
+</AuthProvider>
 );

@@ -2,11 +2,12 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 export function RequireRole({ roles, children }) {
-  const { user } = useAuth();
 
-  console.log("roles permitidos:", roles);
-  console.log("user:", user);
-  console.log("roles usuario:", user?.roles);
+  const { user, loadingAuth } = useAuth();
+
+  if (loadingAuth) {
+    return null;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
