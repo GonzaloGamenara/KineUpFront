@@ -1,4 +1,3 @@
-// src/layouts/AppLayout.jsx
 import { Outlet } from "react-router";
 import logo from "../../assets/logo.png";
 import BottomNavigation from "./BottomNavigation.jsx";
@@ -11,13 +10,13 @@ export default function AppLayout() {
         <img src={logo} alt="KineUp" className="h-9" />
       </header>
 
-      <Sidebar className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64" />
+      <Sidebar />
 
-      <main className="h-full overflow-y-auto px-5 pb-24 pt-20 md:ml-64 md:px-8">
+      <main className="h-dvh overflow-y-auto px-5 pb-24 pt-20 md:ml-64 md:px-8 md:pb-8">
         <Outlet />
       </main>
 
-      <BottomNavigation className="fixed bottom-0 left-0 right-0 z-40 md:hidden" />
+      <BottomNavigation />
     </div>
   );
 }

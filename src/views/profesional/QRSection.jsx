@@ -31,9 +31,11 @@ export default function QRSection() {
   };
 
   return (
-    <section className="space-y-6">
+    <section className="block space-y-6 md:block md:mx-auto md:max-w-3xl">
       <header>
-        <p className="text-sm font-medium text-emerald-700">Profesional</p>
+        <p className="text-sm font-medium text-emerald-700">
+          Profesional
+        </p>
 
         <h1 className="mt-1 text-2xl font-bold text-slate-900">
           Vincular paciente

@@ -25,19 +25,17 @@ export default function Sidebar() {
     : patientTabs;
 
   return (
-    <aside className="hidden h-screen w-64 flex-col border-r border-slate-100 bg-white px-4 py-6 shadow-sm md:flex">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col border-r border-slate-100 bg-white px-4 py-6 shadow-sm md:flex">
       <img src={logo} alt="KineUp" className="mb-8 h-10 w-fit" />
-
       <nav className="flex flex-1 flex-col gap-2">
         {tabs.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                isActive
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "text-slate-500 hover:bg-slate-50"
+              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${isActive
+                ? "bg-emerald-50 text-emerald-600"
+                : "text-slate-500 hover:bg-slate-50"
               }`
             }
           >
