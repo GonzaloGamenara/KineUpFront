@@ -63,7 +63,7 @@ function RegisterPaciente() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenqr}`, // Corregido: 'headers' con 's'
+            Authorization: `Bearer ${tokenqr}`,
           },
         });
 
@@ -79,7 +79,7 @@ function RegisterPaciente() {
       }
 
       // Redirección si todo el flujo fue correcto
-      navigate("/login");
+      navigate("/login-paciente");
     } catch (err) {
       console.error("Error en el flujo de registro:", err);
       setError(err.message || "Error inesperado. Intenta de nuevo.");
