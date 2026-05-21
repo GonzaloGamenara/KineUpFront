@@ -1,19 +1,33 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import { httpClient } from "../../api/httpClient.js";
 import AnimatedBackground from "../layout/AnimatedBackground.jsx";
 import { useAuth } from "../../auth/AuthContext";
+import { useSearchParams } from "react-router-dom";
+import GoogleLoginButton from "./GoogleLogin.jsx";
 
 function Login() {
-
-  const { login } = useAuth();
+  const { user, login, loadingAuth } = useAuth();
 
   const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
+
+  useEffect(() => {
+    if (loadingAuth) return;
+
+    if (user) {
+      if (returnUrl) navigate(returnUrl, { replace: true });
+      else if (user.roles.includes("Admin")) navigate("/admin/home", { replace: true });
+      else if (user.roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
+      else if (user.roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
+    }
+  }, [user, loadingAuth, returnUrl, navigate]);
 
   const handleLogin = async (e) => {
 
@@ -37,24 +51,52 @@ function Login() {
 
       login(data);
 
-      if (roles.includes("Admin")) {
-        navigate("/admin/home");
+      if (returnUrl) {
+        navigate(returnUrl, { replace: true });
+        return;
       }
-      else if (roles.includes("Profesional")) {
-        navigate("/profesional/qr");
-      }
-      else if (roles.includes("Paciente")) {
-        navigate("/paciente/home");
-      }
-      else {
-        navigate("/sin-acceso");
-      }
+
+      if (roles.includes("Admin")) navigate("/admin/home", { replace: true });
+      else if (roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
+      else if (roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
+      else navigate("/sin-acceso", { replace: true });
 
     } catch (err) {
 
       console.error(err);
 
       setError("Sin conexión con el servidor.");
+    }
+  };
+
+  const handleGoogleLogin = async (idToken) => {
+    setError("");
+
+    console.log("Google idToken:", idToken);
+
+    try {
+      const data = await httpClient.post("/api/Auth/google/paciente", {
+        idToken,
+      });
+
+      const roles = data?.userData?.roles ?? [];
+
+      if (!data?.token || !roles.length) {
+        setError("No se pudo iniciar sesión con Google.");
+        return;
+      }
+
+      login(data);
+
+      if (returnUrl) navigate(returnUrl, { replace: true });
+      else if (roles.includes("Admin")) navigate("/admin/home", { replace: true });
+      else if (roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
+      else if (roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
+      else navigate("/sin-acceso", { replace: true });
+
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo iniciar sesión con Google.");
     }
   };
 
@@ -135,14 +177,7 @@ function Login() {
           <div className="grow border-t border-gray-300"></div>
         </div>
 
-        <button className="cursor-pointer justify-center w-full items-center flex bg-white border border-gray-300 hover:bg-gray-50 active:scale-95 text-gray-700 text-base py-3 px-8 rounded-full transition-all shadow-sm">
-          <img
-            className="h-5 mr-2"
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-          />
-          Ingresar con Google
-        </button>
+        <GoogleLoginButton onSuccess={handleGoogleLogin} />
 
         <button
           className="text-sm text-gray-500 hover:text-green-800 transition-colors mt-2"

@@ -1,27 +1,42 @@
 import React, { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { httpClient } from "../../api/httpClient.js";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import { handleApiError } from "../../api/handleError.js";
 
-const URL_BACK = import.meta.env.VITE_URL_BACK;
-const PUERTO_BACK = import.meta.env.VITE_PUERTO_BACK;
+const URL_FRONT = import.meta.env.VITE_URL_FRONT;
+const PUERTO_FRONT = import.meta.env.VITE_PUERTO_FRONT;
 
 export default function QRSection() {
   const [loading, setLoading] = useState(false);
   const [tokenQr, setTokenQr] = useState("");
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-  const qrUrl = `${URL_BACK}:${PUERTO_BACK}/api/Vinculation/confirmacion/${tokenQr}`;
+  const qrUrl = `${URL_FRONT}:${PUERTO_FRONT}/paciente/vincular/${tokenQr}`;
 
   const generarQR = async () => {
     setLoading(true);
 
     try {
+
       const data = await httpClient.post("/api/Vinculation/generar-qr");
 
       setTokenQr(data.token);
-    } catch (error) {
-      console.error(error);
+
+    } catch (err) {
+
+      console.error(err);
+
+      const handled = handleApiError(err, logout, navigate);
+
+      if (handled) return;
+
       alert("No se pudo generar el QR.");
+
     } finally {
+
       setLoading(false);
     }
   };

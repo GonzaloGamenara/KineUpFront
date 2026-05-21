@@ -8,6 +8,7 @@ import QRSection from "../views/profesional/QRSection.jsx";
 import EnConstruccion from "../components/layout/EnConstruccion.jsx";
 import AccesoDenegado from "../components/layout/AccesoDenegado.jsx";
 import NoEncontrado from "../components/layout/NoEncontrado.jsx";
+import Vincular from "../views/paciente/Vincular.jsx";
 
 export default function AppRoutes() {
   return (
@@ -25,6 +26,7 @@ export default function AppRoutes() {
           <Route path="home" element={<HomePaciente />} />
           <Route path="rutinas" element={<EnConstruccion />} />
           <Route path="perfil" element={<EnConstruccion />} />
+          <Route path="vincular/:token" element={<Vincular />} /> 
 
         </Route>
       </Route>
@@ -43,6 +45,8 @@ export default function AppRoutes() {
       </Route>
 
       <Route path="/sin-acceso" element={<AccesoDenegado />} />
+
+      <Route path="/paciente/vincular/:token" element={<Vincular />} />
 
       <Route path="*" element={<NoEncontrado />} />
 

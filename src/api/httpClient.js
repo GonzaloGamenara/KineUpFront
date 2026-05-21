@@ -26,7 +26,17 @@ async function request(endpoint, options = {}) {
     return null;
   }
 
-  return await response.json().catch(() => null);
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      data,
+      message: data?.message ?? "Error en la petición",
+    };
+  }
+
+  return data;
 }
 
 export const httpClient = {
