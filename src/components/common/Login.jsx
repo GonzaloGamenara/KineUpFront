@@ -122,9 +122,6 @@ function Login() {
           <h1 className="text-3xl font-bold text-green-900 leading-tight">
             ¡Qué bueno verte!
           </h1>
-          {/* <p className="text-gray-600 text-sm mt-1">
-            Inicia sesión para comenzar con tu rutina
-          </p> */}
         </div>
 
         {error && (
@@ -182,7 +179,7 @@ function Login() {
         <button
           className="text-sm text-gray-500 hover:text-green-800 transition-colors mt-2"
           type="button"
-          onClick={() => navigate("/register-paciente")}
+          onClick={() => navigate("/registrar-paciente")}
         >
           ¿No tenés cuenta?{" "}
           <span className="font-bold underline">Registrate acá</span>

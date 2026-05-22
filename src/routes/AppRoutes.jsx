@@ -9,6 +9,7 @@ import EnConstruccion from "../components/layout/EnConstruccion.jsx";
 import AccesoDenegado from "../components/layout/AccesoDenegado.jsx";
 import NoEncontrado from "../components/layout/NoEncontrado.jsx";
 import Vincular from "../views/paciente/Vincular.jsx";
+import Register from "../components/common/Register.jsx";
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,8 @@ export default function AppRoutes() {
       <Route path="/" element={<Navigate to="/login" replace />} />
 
       <Route path="/login" element={<Login />} />
+
+      <Route path="/registrar-paciente" element={<Register />} />
 
       <Route element={<RequireRole roles={["Paciente", "Admin"]} />}>
         <Route path="/paciente" element={<AppLayout />}>

@@ -22,7 +22,7 @@ export default function Vincular() {
 
         setTimeout(() => {
           navigate("/paciente/home", { replace: true });
-        }, 1800);
+        }, 5000);
       } catch {
         setEstado("error");
       }
