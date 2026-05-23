@@ -1,25 +1,31 @@
 import React from "react";
-import logo from "/logo_grande.png"; 
+import logo from "/logo_grande.png";
 import profileIcon from "/profile.svg";
 import logoutIcon from "/logout.svg";
 
-function Navbar({setSolapaActiva, solapaActiva, nombreKine = "R. Rodriguez" }) {
+function Navbar({
+  setSolapaActiva,
+  solapaActiva,
+  nombreKine = "R. Rodriguez",
+}) {
   const itemClass =
     "cursor-pointer transition-all duration-300 ease-in-out select-none";
 
   return (
     <nav className="shrink-0 h-25 text-2xl font-bold bg-[#004d31] text-white rounded-b-xl animate-slide-down shadow-lg">
       <ul className="flex justify-between px-10 items-center h-full">
-        
         {/* Contenedor Izquierdo: Logo + Items */}
         <div className="flex gap-10 items-center h-full">
-          
           {/* Logo KineUp */}
-          <li 
+          <li
             onClick={() => setSolapaActiva("qr")}
             className="cursor-pointer hover:scale-105 transition-transform mr-4"
           >
-            <img src={logo} alt="KineUp" className="h-12 w-auto brightness-0 invert" />
+            <img
+              src={logo}
+              alt="KineUp"
+              className="h-12 w-auto brightness-0 invert"
+            />
           </li>
 
           <li

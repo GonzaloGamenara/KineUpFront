@@ -20,13 +20,10 @@ export default function QRSection() {
     setLoading(true);
 
     try {
-
       const data = await httpClient.post("/api/Vinculation/generar-qr");
 
       setTokenQr(data.token);
-
     } catch (err) {
-
       console.error(err);
 
       const handled = handleApiError(err, logout, navigate);
@@ -34,9 +31,7 @@ export default function QRSection() {
       if (handled) return;
 
       alert("No se pudo generar el QR.");
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -45,19 +40,23 @@ export default function QRSection() {
     setTokenQr("");
   };
 
+  {
+    /* FUNCION PARA MANEJAR EL CALLBACK DEL SHARE POR EMAIL */
+  }
+  const handleShare = () => {};
+
   return (
     <section className="block space-y-6 md:block md:mx-auto md:max-w-3xl">
       <header>
-        <p className="text-sm font-medium text-emerald-700">
-          Profesional
-        </p>
+        <p className="text-sm font-medium text-emerald-700">Profesional</p>
 
         <h1 className="mt-1 text-2xl font-bold text-slate-900">
           Vincular paciente
         </h1>
 
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Generá un código QR para que el paciente pueda escanearlo y vincularse con vos.
+          Generá un código QR para que el paciente pueda escanearlo y vincularse
+          con vos.
         </p>
       </header>
 
@@ -102,12 +101,20 @@ export default function QRSection() {
             {loading ? "Generando..." : "Generar QR"}
           </button>
         ) : (
-          <button
-            onClick={finalizarQR}
-            className="mt-6 w-full rounded-2xl bg-red-50 py-4 text-sm font-bold text-red-600 active:scale-[0.98]"
-          >
-            Finalizar vinculación
-          </button>
+          <div className="flex gap-5">
+            <button
+              onClick={finalizarQR}
+              className="mt-6 w-full rounded-2xl bg-red-50 py-4 text-sm font-bold text-red-600 active:scale-[0.98]"
+            >
+              Finalizar vinculación
+            </button>
+            <button
+              onCLick={handleShare}
+              className="mt-6 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
+            >
+              Enviar por email
+            </button>
+          </div>
         )}
       </div>
     </section>

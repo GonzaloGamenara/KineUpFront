@@ -18,7 +18,6 @@ const professionalTabs = [
 ];
 
 export default function Sidebar() {
-
   const { user, logout } = useAuth();
 
   const navigate = useNavigate();
@@ -28,7 +27,6 @@ export default function Sidebar() {
     : patientTabs;
 
   const handleLogout = () => {
-
     logout();
 
     navigate("/login", { replace: true });
@@ -36,9 +34,10 @@ export default function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col bg-primary px-4 py-6 shadow-sm md:flex">
-
       <img src={logo} alt="KineUp" className="h-20 w-fit mx-auto" />
-      <h1 className="text-xl text-center font-bold text-white">{user?.apellido} {user?.nombre[0]}.</h1>
+      <h1 className="text-xl text-center font-bold text-white">
+        {user?.apellido} {user?.nombre[0]}.
+      </h1>
       <hr className="my-6 border-slate-200" />
       <nav className="flex flex-1 flex-col gap-2">
         {tabs.map(({ label, to, icon: Icon }) => (
@@ -66,7 +65,6 @@ export default function Sidebar() {
         <LogOut size={21} />
         Cerrar sesión
       </button>
-
     </aside>
   );
 }

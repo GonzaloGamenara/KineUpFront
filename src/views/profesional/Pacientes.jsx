@@ -1,215 +1,117 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
+import { httpClient } from "../../api/httpClient.js";
+import { NavLink, useNavigate } from "react-router-dom";
 const Pacientes = () => {
+  const [loading, setLoading] = useState(false);
+  const [pacientes, setPacientes] = useState([]);
+  const [popupState, setpopupState] = useState(false);
+  const navigate = useNavigate();
 
-  const data = [
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-    {
-      nombre: "Gonzalo Gamenara",
-      dni: "42818367",
-      prestacion: "OSDE",
-      fecha: "18/04/2026",
-      estado: "Alta",
-      color: "text-green-500",
-    },
-    {
-      nombre: "Pepe Perez",
-      dni: "43080131",
-      prestacion: "Particular",
-      fecha: "18/04/2026",
-      estado: "Tratamiento",
-      color: "text-yellow-500",
-    },
-    {
-      nombre: "Hector Garcia",
-      dni: "17452345",
-      prestacion: "Sancor",
-      fecha: "18/04/2026",
-      estado: "Abandonado",
-      color: "text-red-500",
-    },
-  ];
+  useEffect(() => {
+    loadPacientes();
+  }, []);
+
+  const loadPacientes = async () => {
+    setLoading(true);
+    try {
+      const response = await httpClient.get(`/api/Profesional/pacientes`);
+      setPacientes(response.data || response);
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo recuperar los pacientes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center text-slate-500 font-medium">
+        Cargando Pacientes...
+      </div>
+    );
+  }
+
+  const handleFicha = async () => {
+    setpopupState(true);
+  };
 
   return (
-    <div className="w-full max-w-9/10 mx-auto p-4 animate-fade-in">
-      <div className="flex justify-between mb-5 items-center pt-10 pb-4">
-        <h1 className="text-7xl font-bold text-primary">Pacientes</h1>
-        <div className="pr-80 pl-5 py-4 bg-primary/50 rounded-lg flex text-2xl">
-          <h2 className="text-white font-bold">🔎 Buscar</h2>
+    <section className="p-6 max-w-6xl mx-auto font-sans text-slate-800">
+      <div className="flex justify-between mr-5 items-center">
+        <div className="mb-6">
+          <span className="text-emerald-700 font-semibold text-sm">
+            Profesional
+          </span>
+          <h1 className="text-2xl font-bold text-slate-900 mt-1">
+            Mis pacientes
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Visualizá y gestioná la información de tus pacientes vinculados.
+          </p>
         </div>
+        <button
+          onClick={() => navigate("/profesional/qr")}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition-colors shadow-sm h-max"
+        >
+          Vincular Paciente
+        </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-primary/20 shadow-sm">
-        <table className="w-full text-left border-collapse bg-white">
-
-          <thead className="bg-[#e9f5ee] text-primary text-4xl">
-            <tr>
-              <th className="p-4 font-bold border-b border-primary/20">
-                Nombre y Apellido ▾
-              </th>
-              <th className="p-4 font-bold border-b border-primary/20">DNI</th>
-              <th className="p-4 font-bold border-b border-primary/20">
-                Prestacion ▾
-              </th>
-              <th className="p-4 font-bold border-b border-primary/20">
-                Fecha de registro
-              </th>
-              <th className="p-4 font-bold border-b border-primary/20">
-                Estado ▾
-              </th>
-              <th className="p-4 font-bold border-b border-primary/20 text-center">
-                Ficha Tecnica
-              </th>
-            </tr>
-          </thead>
-
-
-          <tbody className="text-primary-dark font-medium text-3xl">
-            {data.map((paciente, index) => (
-              <tr
-                key={index}
-                className="border-b border-primary/10 hover:bg-slate-50 transition-colors"
-              >
-                <td className="p-4">{paciente.nombre}</td>
-                <td className="p-4 text-slate-500">{paciente.dni}</td>
-                <td className="p-4">{paciente.prestacion}</td>
-                <td className="p-4 pl-20">{paciente.fecha}</td>
-                <td className="p-4 flex items-center gap-2">
-                  <span
-                    className={`h-3 w-3 rounded-full bg-current ${paciente.color}`}
-                  ></span>
-                  {paciente.estado}
-                </td>
-                <td className="p-4 text-center">
-                  <button className="bg-primary text-white px-15 py-1 rounded-md text-3xl font-bold hover:bg-primary-dark cursor-pointer transition-transform active:scale-95">
-                    Abrir
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-6">
+        {pacientes.length < 1 ? (
+          <div className="bg-slate-50 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-20 px-4">
+            <div className="bg-emerald-100 text-emerald-800 rounded-2xl w-16 h-16 flex items-center justify-center font-bold text-2xl mb-4">
+              ?
+            </div>
+            <p className="text-slate-600 font-medium text-center">
+              Todavía no tenés pacientes vinculados
+            </p>
+          </div>
+        ) : (
+          /* Tabla de pacientes */
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <tr>
+                  <th className="font-semibold p-4">Nombre completo</th>
+                  <th className="font-semibold p-4">Correo electrónico</th>
+                  <th className="font-semibold p-4">Fecha nacimiento</th>
+                  <th className="font-semibold p-4">Obra social</th>
+                  <th className="font-semibold p-4">Estado</th>
+                  <th className="font-semibold p-4 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-700">
+                {pacientes.map((paciente) => (
+                  <tr
+                    key={paciente.idPaciente}
+                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="p-4 font-medium text-slate-900">
+                      {paciente?.nombreCompleto}
+                    </td>
+                    <td className="p-4">{paciente?.email}</td>
+                    <td className="p-4">{paciente?.fechaNacimiento}</td>
+                    <td className="p-4">OSDE</td>
+                    <td className="p-4">
+                      <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
+                        En tratamiento
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition-colors shadow-sm">
+                        Ver ficha
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 };
 
