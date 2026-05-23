@@ -6,8 +6,7 @@ import Sidebar from "./Sidebar.jsx";
 export default function AppLayout() {
   return (
     <div className="h-dvh overflow-hidden bg-[#F5F8F6]">
-      <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-center border-b border-slate-100 bg-white px-4 md:justify-start md:pl-72">
-        <img src={logo} alt="KineUp" className="h-9" />
+      <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-center bg-primary px-4 md:justify-start md:pl-72">
       </header>
 
       <Sidebar />

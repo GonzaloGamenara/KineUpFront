@@ -12,9 +12,8 @@ const patientTabs = [
 ];
 
 const professionalTabs = [
-  { label: "Inicio", to: "/profesional/home", icon: Home },
-  { label: "Pacientes", to: "/profesional/pacientes", icon: Users },
   { label: "QR", to: "/profesional/qr", icon: QrCode },
+  { label: "Pacientes", to: "/profesional/pacientes", icon: Users },
   { label: "Perfil", to: "/profesional/perfil", icon: User },
 ];
 
@@ -36,10 +35,11 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col border-r border-slate-100 bg-white px-4 py-6 shadow-sm md:flex">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col bg-primary px-4 py-6 shadow-sm md:flex">
 
-      <img src={logo} alt="KineUp" className="mb-8 h-10 w-fit" />
-
+      <img src={logo} alt="KineUp" className="h-20 w-fit mx-auto" />
+      <h1 className="text-xl text-center font-bold text-white">{user?.apellido} {user?.nombre[0]}.</h1>
+      <hr className="my-6 border-slate-200" />
       <nav className="flex flex-1 flex-col gap-2">
         {tabs.map(({ label, to, icon: Icon }) => (
           <NavLink
@@ -48,8 +48,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                 isActive
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "text-slate-500 hover:bg-slate-50"
+                  ? "bg-primary-dark text-white "
+                  : "text-white hover:bg-slate-50 hover:text-primary-dark"
               }`
             }
           >
@@ -61,7 +61,7 @@ export default function Sidebar() {
 
       <button
         onClick={handleLogout}
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-500"
+        className="flex items-center cursor-pointer gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-white hover:bg-red-50 hover:text-red-500"
       >
         <LogOut size={21} />
         Cerrar sesión
