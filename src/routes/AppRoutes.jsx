@@ -29,7 +29,7 @@ export default function AppRoutes() {
 
           <Route path="home" element={<HomePaciente />} />
           <Route path="rutinas" element={<EnConstruccion />} />
-          <Route path="perfil" element={<EnConstruccion />} />
+          <Route path="perfil" element={<Profile />} />
           <Route path="vincular/:token" element={<Vincular />} />
         </Route>
       </Route>
