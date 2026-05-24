@@ -46,7 +46,7 @@ export default function QRSection() {
   const handleShare = () => {};
 
   return (
-    <section className="block space-y-6 md:block md:mx-auto md:max-w-3xl">
+    <section>
       <header>
         <p className="text-sm font-medium text-emerald-700">Profesional</p>
 

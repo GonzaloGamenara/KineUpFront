@@ -76,12 +76,10 @@ export default function Register() {
               label="Fecha de nacimiento"
               placeholder="dd/mm/aaaa"
               icon={Calendar}
+              type="date"
             />
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              <Input label="Matrícula" placeholder="MP 123456" />
-              <Input label="Especialidad" placeholder="Kinesiología" />
-            </div>
+            <Input label="Matrícula" placeholder="MP 123456" />
           )}
 
           <button className="w-full rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-md shadow-emerald-200 active:scale-[0.98]">

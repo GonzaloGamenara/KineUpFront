@@ -30,11 +30,8 @@ const Profile = () => {
 
           <div className="text-center sm:text-left mt-2 sm:mt-0">
             <h2 className="text-xl font-bold text-slate-900">
-              Dr. {user?.nombre} {user?.apellido}
+              {user?.nombre} {user?.apellido}
             </h2>
-            <p className="text-slate-500 font-medium mt-1">
-              Profesional de la Salud
-            </p>
             <button className="mt-3 text-emerald-600 text-sm font-semibold hover:text-emerald-800 transition-colors">
               Cambiar foto de perfil
             </button>
@@ -69,19 +66,7 @@ const Profile = () => {
               Usuario
             </label>
             <input
-              type="tel"
               defaultValue={user?.usuario}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-slate-50 focus:bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Numero de matricula
-            </label>
-            <input
-              type="email"
-              defaultValue="ML-141254"
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-slate-50 focus:bg-white"
             />
           </div>

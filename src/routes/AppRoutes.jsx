@@ -12,6 +12,7 @@ import Vincular from "../views/paciente/Vincular.jsx";
 import Register from "../components/common/Register.jsx";
 import Pacientes from "../views/profesional/Pacientes.jsx";
 import Profile from "../components/common/Profile.jsx";
+import Rutinas from "../views/profesional/Rutinas.jsx";
 
 export default function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ export default function AppRoutes() {
           <Route path="qr" element={<QRSection />} />
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="perfil" element={<Profile />} />
+          <Route path="rutinas" element={<Rutinas />} />
         </Route>
       </Route>
 

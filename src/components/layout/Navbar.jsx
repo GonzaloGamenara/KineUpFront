@@ -10,9 +10,10 @@ function Navbar({
 }) {
   const itemClass =
     "cursor-pointer transition-all duration-300 ease-in-out select-none";
-
+      
   return (
-    <nav className="shrink-0 h-25 text-2xl font-bold bg-[#004d31] text-white rounded-b-xl animate-slide-down shadow-lg">
+    <nav className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-center border-b border-slate-100 bg-white px-4 md:justify-start md:pl-72">
+      <img src={logo} alt="KineUp" className="h-20 w-fit mx-auto" />
       <ul className="flex justify-between px-10 items-center h-full">
         {/* Contenedor Izquierdo: Logo + Items */}
         <div className="flex gap-10 items-center h-full">
