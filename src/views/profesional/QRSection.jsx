@@ -46,17 +46,16 @@ export default function QRSection() {
   const handleShare = () => {};
 
   return (
-    <section>
-      <header>
-        <p className="text-sm font-medium text-emerald-700">Profesional</p>
-
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">
-          Vincular paciente
+    <section className="space-y-5 animate-fade-in">
+      <header className="mb-6">
+        <span className="text-emerald-700 font-semibold text-sm">
+          Profesional
+        </span>
+        <h1 className="text-2xl font-bold text-slate-900 mt-1">
+          Vincular Paciente
         </h1>
-
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          Generá un código QR para que el paciente pueda escanearlo y vincularse
-          con vos.
+        <p className="text-slate-500 text-sm mt-1">
+          Generá un código QR para que tu paciente pueda vincularse a tu cuenta.
         </p>
       </header>
 

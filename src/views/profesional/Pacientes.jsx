@@ -75,7 +75,7 @@ export default function Pacientes() {
   }
 
   return (
-    <section className="space-y-5 md:mx-auto md:max-w-6xl">
+    <section className="space-y-5 animate-fade-in">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-semibold text-emerald-700">

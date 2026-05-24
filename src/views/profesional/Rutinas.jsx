@@ -24,7 +24,7 @@ export default function Rutinas() {
   const categorias = ["Todos", "Hombro", "Miembros Inferiores", "Core / Cadera", "Cervical"];
 
   return (
-    <div className="p-6 md:p-10 max-w-6xl mx-auto space-y-8 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       {/* Encabezado */}
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
