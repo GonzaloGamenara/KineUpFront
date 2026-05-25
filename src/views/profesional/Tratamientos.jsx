@@ -10,7 +10,7 @@ const mockupEjercicios = [
   { id: 5, nombre: "Estiramiento Trapecio Superior", zona: "Cervical", series: 2, repeticiones: 30, descripcion: "Sostener de forma pasiva sin dolor.", tipo: "Flexibilidad" },
 ];
 
-export default function Rutinas() {
+export default function Tratamientos() {
   const [busqueda, setBusqueda] = useState("");
   const [zonaSeleccionada, setZonaSeleccionada] = useState("Todos");
 

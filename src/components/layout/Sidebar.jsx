@@ -14,7 +14,7 @@ const patientTabs = [
 const professionalTabs = [
   { label: "Inicio", to: "/profesional/home", icon: Home },
   { label: "Pacientes", to: "/profesional/pacientes", icon: Users },
-  { label: "Rutinas", to: "/profesional/rutinas", icon: Calendar },
+  { label: "Tratamientos", to: "/profesional/tratamientos", icon: Calendar },
   { label: "Perfil", to: "/profesional/perfil", icon: User },
 ];
 

@@ -2,6 +2,7 @@ const URL_BACK = import.meta.env.VITE_URL_BACK;
 const PUERTO_BACK = import.meta.env.VITE_PUERTO_BACK;
 
 async function request(endpoint, options = {}) {
+
   const token = localStorage.getItem("token");
 
   const headers = {
@@ -20,7 +21,12 @@ async function request(endpoint, options = {}) {
     config.body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(`${URL_BACK}:${PUERTO_BACK}${endpoint}`, config);
+  console.log(`${URL_BACK}:${PUERTO_BACK}${endpoint}`, config);
+
+  const response = await fetch(
+    `${URL_BACK}:${PUERTO_BACK}${endpoint}`,
+    config
+  );
 
   if (response.status === 204) {
     return null;
@@ -29,6 +35,7 @@ async function request(endpoint, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
+
     throw {
       status: response.status,
       data,
@@ -40,6 +47,7 @@ async function request(endpoint, options = {}) {
 }
 
 export const httpClient = {
+
   get: (endpoint, options) =>
     request(endpoint, { ...options, method: "GET" }),
 
