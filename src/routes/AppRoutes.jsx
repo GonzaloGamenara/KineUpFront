@@ -14,6 +14,7 @@ import Pacientes from "../views/profesional/Pacientes.jsx";
 import Profile from "../components/common/Profile.jsx";
 import Tratamientos from "../views/profesional/Tratamientos.jsx";
 import DetallePaciente from "../views/profesional/DetallePaciente.jsx";
+import DetalleRutina from "../views/paciente/DetalleRutina.jsx";
 
 export default function AppRoutes() {
   return (
