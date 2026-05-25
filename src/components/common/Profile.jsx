@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../../auth/AuthContext";
+import LogoutButton from "./LogoutButton";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -82,6 +83,10 @@ const Profile = () => {
             Guardar cambios
           </button>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <LogoutButton className="w-full flex items-center cursor-pointer justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 bg-white border border-red-200 hover:border-red-300 transition" />
       </div>
     </section>
   );
