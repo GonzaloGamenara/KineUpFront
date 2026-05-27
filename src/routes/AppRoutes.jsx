@@ -15,6 +15,7 @@ import Profile from "../components/common/Profile.jsx";
 import Tratamientos from "../views/profesional/Tratamientos.jsx";
 import DetallePaciente from "../views/profesional/DetallePaciente.jsx";
 import DetalleRutina from "../views/paciente/DetalleRutina.jsx";
+import HomeProfesional from "../views/profesional/HomeProfesional.jsx";
 
 export default function AppRoutes() {
   return (
@@ -41,7 +42,7 @@ export default function AppRoutes() {
         <Route path="/profesional" element={<AppLayout />}>
           <Route index element={<Navigate to="home" replace />} />
 
-          <Route path="home" element={<EnConstruccion />} />
+          <Route path="home" element={<HomeProfesional />} />
           <Route path="qr" element={<QRSection />} />
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="perfil" element={<Profile />} />
