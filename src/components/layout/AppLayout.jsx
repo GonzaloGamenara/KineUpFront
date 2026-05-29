@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 import { useRef, useState } from "react";
-import logo from "../../assets/logo.png";
+import logo from "../../../public/logo_principal.svg";
 import BottomNavigation from "./BottomNavigation.jsx";
 import Sidebar from "./Sidebar.jsx";
 
@@ -21,7 +21,7 @@ export default function AppLayout() {
           hideHeader ? "-translate-y-full md:translate-y-0" : "translate-y-0"
         }`}
       >
-        <img src={logo} alt="KineUp" className="h-10 w-auto" />
+        <img src={logo} alt="KineUp" className="h-20 w-auto" />
       </header>
 
       <Sidebar />

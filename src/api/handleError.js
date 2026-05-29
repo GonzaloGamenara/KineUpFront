@@ -1,6 +1,6 @@
 export function handleApiError(err, logout, navigate) {
-
   if (err.status === 401) {
+    alert("Tu sesión expiró. Necesitás iniciar sesión nuevamente.");
     logout();
     navigate("/login", { replace: true });
     return true;

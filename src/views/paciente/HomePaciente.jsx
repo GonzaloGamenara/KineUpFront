@@ -8,8 +8,8 @@ function HomePaciente() {
   const [rutinas, setRutinas] = useState([
     {
       id: 1,
-      nombre: "Movilidad de Hombro",
-      ejercicios: 4,
+      nombre: "Rotura Ligamento Cruzado Anterior",
+      ejercicios: 3,
       duracion: "15 min",
       completada: true,
     },
@@ -20,34 +20,6 @@ function HomePaciente() {
       duracion: "20 min",
       completada: false,
     },
-    {
-      id: 3,
-      nombre: "Estiramiento de Cadena Posterior",
-      ejercicios: 3,
-      duracion: "10 min",
-      completada: false,
-    },
-        {
-      id: 4,
-      nombre: "Estiramiento de Cadena Posterior",
-      ejercicios: 3,
-      duracion: "10 min",
-      completada: false,
-    },
-    {
-      id: 5,
-      nombre: "Fortalecimiento Lumbar",
-      ejercicios: 5,
-      duracion: "20 min",
-      completada: false,
-    },
-    {
-      id: 6,
-      nombre: "Fortalecimiento Lumbar",
-      ejercicios: 5,
-      duracion: "20 min",
-      completada: false,
-    },    
   ]);
 
   // Manejador interactivo para completar rutinas
@@ -118,7 +90,9 @@ function HomePaciente() {
             {rutinas.map((rutina) => (
               <div
                 key={rutina.id}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-between bg-white ${
+                // Al hacer clic en la tarjeta te lleva al detalle dinámico de la rutina
+                onClick={() => navigate(`/paciente/detalle-rutina/${rutina.id}`)}
+                className={`p-4 rounded-2xl border transition-all flex items-center justify-between bg-white cursor-pointer hover:border-green-500 active:scale-[0.99] ${
                   rutina.completada
                     ? "border-green-200 bg-green-50/30 opacity-75"
                     : "border-gray-100 shadow-sm hover:shadow-md"
@@ -139,7 +113,11 @@ function HomePaciente() {
                 {/* Checkbox interactivo */}
                 <button
                   type="button"
-                  onClick={() => toggleRutina(rutina.id)}
+                  onClick={(e) => {
+                    // e.stopPropagation() evita que al tildar la rutina se abra la otra pantalla por accidente
+                    e.stopPropagation(); 
+                    toggleRutina(rutina.id);
+                  }}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl transition-all border-2 shrink-0 ${
                     rutina.completada
                       ? "bg-green-600 border-green-600 text-white shadow-md"

@@ -1,9 +1,10 @@
 // src/components/layout/Sidebar.jsx
 
-import { NavLink, useNavigate } from "react-router-dom";
-import { Home, QrCode, Users, Calendar, User, LogOut } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Home, QrCode, Users, Calendar, User } from "lucide-react";
 import logo from "../../assets/logo.png";
 import { useAuth } from "../../auth/AuthContext";
+import LogoutButton from "../common/LogoutButton";
 
 const patientTabs = [
   { label: "Inicio", to: "/paciente/home", icon: Home },
@@ -14,24 +15,16 @@ const patientTabs = [
 const professionalTabs = [
   { label: "Inicio", to: "/profesional/home", icon: Home },
   { label: "Pacientes", to: "/profesional/pacientes", icon: Users },
-  { label: "Rutinas", to: "/profesional/rutinas", icon: Calendar },
+  { label: "Tratamientos", to: "/profesional/tratamientos", icon: Calendar },
   { label: "Perfil", to: "/profesional/perfil", icon: User },
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
-
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const tabs = user?.roles?.includes("Profesional")
     ? professionalTabs
     : patientTabs;
-
-  const handleLogout = () => {
-    logout();
-
-    navigate("/login", { replace: true });
-  };
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col border-r border-slate-100 bg-white px-4 py-6 shadow-sm md:flex">
@@ -60,13 +53,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <button
-        onClick={handleLogout}
-        className="flex items-center cursor-pointer gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-500"
-      >
-        <LogOut size={21} />
-        Cerrar sesión
-      </button>
+      <LogoutButton />
     </aside>
   );
 }

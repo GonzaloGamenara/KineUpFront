@@ -4,14 +4,14 @@ import { useAuth } from "../../auth/AuthContext";
 
 const patientTabs = [
   { label: "Inicio", to: "/paciente/home", icon: Home },
-  { label: "Rutinas", to: "/paciente/rutinas", icon: Calendar },
+  // { label: "Rutinas", to: "/paciente/rutinas", icon: Calendar },
   { label: "Perfil", to: "/paciente/perfil", icon: User },
 ];
 
 const professionalTabs = [
   { label: "Inicio", to: "/profesional/home", icon: Home },
   { label: "Pacientes", to: "/profesional/pacientes", icon: Users },
-  { label: "QR", to: "/profesional/qr", icon: QrCode },
+  { label: "Tratamientos", to: "/profesional/tratamientos", icon: Calendar },
   { label: "Perfil", to: "/profesional/perfil", icon: User },
 ];
 

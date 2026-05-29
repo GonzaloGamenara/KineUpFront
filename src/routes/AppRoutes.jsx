@@ -12,7 +12,10 @@ import Vincular from "../views/paciente/Vincular.jsx";
 import Register from "../components/common/Register.jsx";
 import Pacientes from "../views/profesional/Pacientes.jsx";
 import Profile from "../components/common/Profile.jsx";
-import Rutinas from "../views/profesional/Rutinas.jsx";
+import Tratamientos from "../views/profesional/Tratamientos.jsx";
+import DetallePaciente from "../views/profesional/DetallePaciente.jsx";
+import DetalleRutina from "../views/paciente/DetalleRutina.jsx";
+import HomeProfesional from "../views/profesional/HomeProfesional.jsx";
 
 export default function AppRoutes() {
   return (
@@ -28,6 +31,7 @@ export default function AppRoutes() {
           <Route index element={<Navigate to="home" replace />} />
 
           <Route path="home" element={<HomePaciente />} />
+          <Route path="/paciente/detalle-rutina/:id" element={<DetalleRutina />} />
           <Route path="rutinas" element={<EnConstruccion />} />
           <Route path="perfil" element={<Profile />} />
           <Route path="vincular/:token" element={<Vincular />} />
@@ -38,11 +42,12 @@ export default function AppRoutes() {
         <Route path="/profesional" element={<AppLayout />}>
           <Route index element={<Navigate to="home" replace />} />
 
-          <Route path="home" element={<EnConstruccion />} />
+          <Route path="home" element={<HomeProfesional />} />
           <Route path="qr" element={<QRSection />} />
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="perfil" element={<Profile />} />
-          <Route path="rutinas" element={<Rutinas />} />
+          <Route path="tratamientos" element={<Tratamientos />} />
+          <Route path="pacientes/:idPaciente" element={<DetallePaciente />} />
         </Route>
       </Route>
 

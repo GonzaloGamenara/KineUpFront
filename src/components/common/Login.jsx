@@ -69,14 +69,14 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = async (idToken) => {
+  const handleGoogleLogin = async (Token) => {
     setError("");
 
-    console.log("Google idToken:", idToken);
+    console.log("Google Token:", Token);
 
     try {
       const data = await httpClient.post("/api/Auth/google/paciente", {
-        idToken,
+        Token: Token,
       });
 
       const roles = data?.userData?.roles ?? [];
