@@ -1,152 +1,144 @@
-import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PlayCircle, AlertCircle } from "lucide-react";
+import { useState } from "react";
 
-function HomePaciente() {
+export default function HomePaciente() {
   const navigate = useNavigate();
 
-  // Datos de prueba para simular las rutinas kinesiológicas
-  const [rutinas, setRutinas] = useState([
+  const [tratamiento] = useState({
+    nombre: "Rehabilitación de Rodilla",
+    progreso: 55,
+    activa: true,
+    etapas: [
+      {
+        id: 1,
+        nombre: "Fase inicial",
+        progreso: 100,
+      },
+      {
+        id: 2,
+        nombre: "Fortalecimiento",
+        progreso: 60,
+      },
+      {
+        id: 3,
+        nombre: "Retorno deportivo",
+        progreso: 10,
+      },
+    ],
+  });
+
+  const rutinasEnProgreso = [
     {
       id: 1,
-      nombre: "Rotura Ligamento Cruzado Anterior",
-      ejercicios: 3,
-      duracion: "15 min",
-      completada: true,
+      nombre: "Movilidad articular",
+      estado: "en_progreso",
     },
-    {
-      id: 2,
-      nombre: "Fortalecimiento Lumbar",
-      ejercicios: 5,
-      duracion: "20 min",
-      completada: false,
-    },
-  ]);
+  ];
 
-  // Manejador interactivo para completar rutinas
-  const toggleRutina = (id) => {
-    setRutinas(
-      rutinas.map((r) =>
-        r.id === id ? { ...r, completada: !r.completada } : r,
-      ),
+  /*SIN TRATAMIENTO */
+  if (!tratamiento) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-20 space-y-3">
+        <AlertCircle size={60} className="text-slate-300" />
+
+        <h1 className="text-xl font-bold text-slate-800">
+          Aún no tenés un tratamiento asignado
+        </h1>
+
+        <p className="text-sm text-slate-500">
+          Tu profesional aún no cargó tu plan de rehabilitación.
+        </p>
+      </div>
     );
-  };
-
-  // Cálculo matemático del progreso diario
-  const completadas = rutinas.filter((r) => r.completada).length;
-  const porcentajeProgreso = Math.round((completadas / rutinas.length) * 100);
+  }
 
   return (
-    <div>
-      {/* Contenedor principal */}
-      <main>
-        {/* Texto de Bienvenida */}
-        <div className="space-y-1 mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">
-            ¡Hola! 👋
-          </h1>
-          <p className="text-sm text-gray-500 font-medium">
-            Acá tenés el seguimiento de tu rehabilitación para hoy.
-          </p>
+    <div className="space-y-6">
+
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">
+          Hola 👋
+        </h1>
+        <p className="text-sm text-slate-500">
+          Seguimiento de tu recuperación
+        </p>
+      </div>
+
+      {/* TRATAMIENTO */}
+      <div className="bg-white p-5 rounded-3xl shadow-sm space-y-4">
+
+        {/* TITULO + PROGRESO */}
+        <div className="flex justify-between items-center">
+          <h2 className="font-bold text-slate-900">
+            {tratamiento.nombre}
+          </h2>
+
+          <span className="text-[#007a3f] font-bold">
+            {tratamiento.progreso}%
+          </span>
         </div>
 
-        {/* Tarjeta de Progreso */}
-        <div className="bg-gradient-to-br from-[#007a3f] to-[#005a2f] text-white p-5 rounded-3xl shadow-xl shadow-green-900/10 mb-6">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <p className="text-xs text-green-200 uppercase tracking-widest font-bold">
-                Progreso Diario
-              </p>
-              <h3 className="text-lg font-bold mt-0.5">Tu recuperación</h3>
-            </div>
-            <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
-              {completadas}/{rutinas.length} Hechas
-            </span>
-          </div>
+        {/* BARRA GLOBAL */}
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#007a3f]"
+            style={{ width: `${tratamiento.progreso}%` }}
+          />
+        </div>
 
-          {/* Barra de carga dinámica */}
-          <div className="w-full bg-black/20 h-2.5 rounded-full mt-4 overflow-hidden">
+        {/* ETAPAS */}
+        <div className="space-y-2">
+          {tratamiento.etapas.map((e) => (
             <div
-              className="bg-white h-full rounded-full transition-all duration-500"
-              style={{ width: `${porcentajeProgreso}%` }}
-            ></div>
-          </div>
-          <p className="text-xs text-green-100 mt-2 text-right font-medium">
-            {porcentajeProgreso}% completado
-          </p>
+              key={e.id}
+              className="flex justify-between text-sm bg-slate-50 p-3 rounded-xl"
+            >
+              <span className="font-medium">{e.nombre}</span>
+
+              <span className="text-slate-500">
+                {e.progreso}%
+              </span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Listado de Rutinas */}
-        <div className="space-y-3 mb-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-green-950">
-              Tus Rutinas Asignadas
-            </h2>
-            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-              Hoy
-            </span>
-          </div>
+      {/* RUTINA EN PROGRESO */}
+      {rutinasEnProgreso.length > 0 && (
+        <div className="bg-white p-4 rounded-2xl shadow-sm space-y-3">
 
-          <div className="space-y-3">
-            {rutinas.map((rutina) => (
-              <div
-                key={rutina.id}
-                // Al hacer clic en la tarjeta te lleva al detalle dinámico de la rutina
-                onClick={() => navigate(`/paciente/detalle-rutina/${rutina.id}`)}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-between bg-white cursor-pointer hover:border-green-500 active:scale-[0.99] ${
-                  rutina.completada
-                    ? "border-green-200 bg-green-50/30 opacity-75"
-                    : "border-gray-100 shadow-sm hover:shadow-md"
-                }`}
-              >
-                <div className="flex flex-col gap-1 pr-4">
-                  <span
-                    className={`font-bold text-base leading-tight ${rutina.completada ? "line-through text-gray-400" : "text-gray-800"}`}
-                  >
-                    {rutina.nombre}
-                  </span>
-                  <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
-                    <span>📋 {rutina.ejercicios} ejercicios</span>
-                    <span>⏱️ {rutina.duracion}</span>
-                  </div>
-                </div>
+          <h3 className="font-bold text-slate-900">
+            Continuar rutina
+          </h3>
 
-                {/* Checkbox interactivo */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    // e.stopPropagation() evita que al tildar la rutina se abra la otra pantalla por accidente
-                    e.stopPropagation(); 
-                    toggleRutina(rutina.id);
-                  }}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl transition-all border-2 shrink-0 ${
-                    rutina.completada
-                      ? "bg-green-600 border-green-600 text-white shadow-md"
-                      : "border-gray-200 text-transparent hover:border-green-600"
-                  }`}
-                >
-                  ✓
-                </button>
-              </div>
-            ))}
-          </div>
+          {rutinasEnProgreso.map((r) => (
+            <div
+              key={r.id}
+              onClick={() => navigate("/paciente/rutina-activa")}
+              className="flex justify-between items-center bg-green-50 p-3 rounded-xl cursor-pointer"
+            >
+              <span className="font-medium text-green-800">
+                {r.nombre}
+              </span>
+
+              <PlayCircle className="text-[#007a3f]" />
+            </div>
+          ))}
         </div>
+      )}
 
-        {/* Tarjeta de indicación del Kinesiólogo */}
-        <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl flex items-start gap-3">
-          <span className="text-xl">👨‍⚕️</span>
-          <div className="space-y-0.5">
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Indicación Profesional
-            </h4>
-            <p className="text-xs text-gray-600 leading-normal">
-              Recordá realizar los movimientos de forma pausada. Ante cualquier
-              dolor agudo, suspendé el ejercicio y consultá con tu profesional a cargo.
-            </p>
-          </div>
-        </div>
-      </main>
+      {/* ACCESO A RUTINAS / ETAPAS */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm">
+        <button
+          onClick={() => navigate("/paciente/rutina-activa")}
+          className="w-full bg-[#007a3f] text-white py-3 rounded-2xl font-semibold"
+        >
+          Ver ejercicios de la etapa actual
+        </button>
+      </div>
+
     </div>
   );
 }
-
-export default HomePaciente;
