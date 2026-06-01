@@ -41,6 +41,15 @@
 
   /*COLORES*/
   --color-primary: #007a3f;
-  --color-primary-dark: #005a2f;
-  --color-secondary: #f0f0f0;
+  --color-primary-light: #DCFCE7;
+  --color-primary-soft: #F0FDF4;
+  --color-primary-dark: #166534;
+
+  --color-background: #F5F8F6;
+
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+
+  --color-border: #E2E8F0;
+
 }

@@ -8,8 +8,8 @@ function HomePaciente() {
   const [rutinas, setRutinas] = useState([
     {
       id: 1,
-      nombre: "Movilidad de Hombro",
-      ejercicios: 4,
+      nombre: "Rotura Ligamento Cruzado Anterior",
+      ejercicios: 3,
       duracion: "15 min",
       completada: true,
     },
@@ -18,13 +18,6 @@ function HomePaciente() {
       nombre: "Fortalecimiento Lumbar",
       ejercicios: 5,
       duracion: "20 min",
-      completada: false,
-    },
-    {
-      id: 3,
-      nombre: "Estiramiento de Cadena Posterior",
-      ejercicios: 3,
-      duracion: "10 min",
       completada: false,
     },
   ]);
@@ -43,29 +36,13 @@ function HomePaciente() {
   const porcentajeProgreso = Math.round((completadas / rutinas.length) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f0fdf4] to-white font-poppins text-gray-800 pb-24">
-      {/* Header superior móvil */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-5 py-4 border-b border-gray-100 flex items-center justify-between max-w-md mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="font-bold text-xl text-green-900 tracking-tight">
-            KineUp
-          </span>
-        </div>
-        <button
-          onClick={() => navigate("/login-paciente")}
-          className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-        >
-          Salir
-        </button>
-      </header>
-
+    <div>
       {/* Contenedor principal */}
-      <main className="px-5 mt-6 max-w-md mx-auto space-y-6">
+      <main>
         {/* Texto de Bienvenida */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-green-900">
-            ¡Hola de nuevo! 👋
+        <div className="space-y-1 mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">
+            ¡Hola! 👋
           </h1>
           <p className="text-sm text-gray-500 font-medium">
             Acá tenés el seguimiento de tu rehabilitación para hoy.
@@ -73,8 +50,8 @@ function HomePaciente() {
         </div>
 
         {/* Tarjeta de Progreso */}
-        <div className="bg-gradient-to-br from-[#007a3f] to-[#005a2f] text-white p-5 rounded-3xl shadow-xl shadow-green-900/10">
-          <div className="flex justify-between items-start mb-3">
+        <div className="bg-gradient-to-br from-[#007a3f] to-[#005a2f] text-white p-5 rounded-3xl shadow-xl shadow-green-900/10 mb-6">
+          <div className="flex justify-between items-start mb-6">
             <div>
               <p className="text-xs text-green-200 uppercase tracking-widest font-bold">
                 Progreso Diario
@@ -99,7 +76,7 @@ function HomePaciente() {
         </div>
 
         {/* Listado de Rutinas */}
-        <div className="space-y-3">
+        <div className="space-y-3 mb-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-green-950">
               Tus Rutinas Asignadas
@@ -113,7 +90,9 @@ function HomePaciente() {
             {rutinas.map((rutina) => (
               <div
                 key={rutina.id}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-between bg-white ${
+                // Al hacer clic en la tarjeta te lleva al detalle dinámico de la rutina
+                onClick={() => navigate(`/paciente/detalle-rutina/${rutina.id}`)}
+                className={`p-4 rounded-2xl border transition-all flex items-center justify-between bg-white cursor-pointer hover:border-green-500 active:scale-[0.99] ${
                   rutina.completada
                     ? "border-green-200 bg-green-50/30 opacity-75"
                     : "border-gray-100 shadow-sm hover:shadow-md"
@@ -134,7 +113,11 @@ function HomePaciente() {
                 {/* Checkbox interactivo */}
                 <button
                   type="button"
-                  onClick={() => toggleRutina(rutina.id)}
+                  onClick={(e) => {
+                    // e.stopPropagation() evita que al tildar la rutina se abra la otra pantalla por accidente
+                    e.stopPropagation(); 
+                    toggleRutina(rutina.id);
+                  }}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl transition-all border-2 shrink-0 ${
                     rutina.completada
                       ? "bg-green-600 border-green-600 text-white shadow-md"
@@ -157,34 +140,11 @@ function HomePaciente() {
             </h4>
             <p className="text-xs text-gray-600 leading-normal">
               Recordá realizar los movimientos de forma pausada. Ante cualquier
-              dolor agudo, frená la sesión y mandale un mensaje a tu kinesiólogo
-              asignado.
+              dolor agudo, suspendé el ejercicio y consultá con tu profesional a cargo.
             </p>
           </div>
         </div>
       </main>
-
-      {/* Navbar inferior fijo (Mobile-Look) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 py-3 px-8 flex justify-around items-center z-40 max-w-md mx-auto rounded-t-3xl shadow-lg shadow-black/5">
-        <button className="flex flex-col items-center gap-1 text-green-700">
-          <span className="text-xl">🏋️‍♂️</span>
-          <span className="text-[10px] font-bold uppercase tracking-wide">
-            Rutinas
-          </span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-green-700 transition-colors">
-          <span className="text-xl">📊</span>
-          <span className="text-[10px] font-bold uppercase tracking-wide">
-            Evolución
-          </span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-green-700 transition-colors">
-          <span className="text-xl">👤</span>
-          <span className="text-[10px] font-bold uppercase tracking-wide">
-            Perfil
-          </span>
-        </button>
-      </nav>
     </div>
   );
 }
