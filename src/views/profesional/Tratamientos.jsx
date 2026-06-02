@@ -120,7 +120,6 @@ export default function Tratamientos() {
     <section className="space-y-6 animate-fade-in">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold text-emerald-700">Profesional</p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">
             Mis Tratamientos
           </h1>

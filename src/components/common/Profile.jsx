@@ -13,14 +13,11 @@ const Profile = () => {
   return (
     <section className="text-slate-800 animate-fade-in">
       <div className="mb-6">
-        <span className="text-emerald-700 font-semibold text-sm">
-          Configuración
-        </span>
         <h1 className="text-2xl font-bold text-slate-900 mt-1">
           Mi Perfil
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          Visualizá y actualizá tus datos personales y de contacto.
+          Visualizá y actualizá tus datos personales.
         </p>
       </div>
 

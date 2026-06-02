@@ -56,6 +56,7 @@ export default function HomeProfesional() {
   const [loading, setLoading] = useState(false);
   const [pacientes, setPacientes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -103,10 +104,19 @@ export default function HomeProfesional() {
   };
 
   const pacientesFiltrados = useMemo(() => {
-    return pacientes.filter((paciente) =>
-      getPacienteNombre(paciente).toLowerCase().includes(busqueda.toLowerCase())
-    );
-  }, [busqueda, pacientes]);
+    return pacientes.filter((paciente) => {
+      const cumpleNombre = getPacienteNombre(paciente)
+        .toLowerCase()
+        .includes(busqueda.toLowerCase());
+
+      const tieneActivo = paciente.tratamientos.some(tieneTratamientoActivo);
+      let cumpleEstado = true;
+      if (filtroEstado === "con") cumpleEstado = tieneActivo;
+      if (filtroEstado === "sin") cumpleEstado = !tieneActivo;
+
+      return cumpleNombre && cumpleEstado;
+    });
+  }, [busqueda, filtroEstado, pacientes]);
 
   const metricas = useMemo(() => {
     const conTratamiento = pacientes.filter((paciente) =>
@@ -139,7 +149,6 @@ export default function HomeProfesional() {
     <section className="space-y-5 animate-fade-in">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-emerald-700">Profesional</p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">
             Hola de nuevo
           </h1>
@@ -151,18 +160,56 @@ export default function HomeProfesional() {
 
       {error && <ErrorState message={error} onRetry={loadDashboard} />}
 
-      <div className="relative">
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-        />
-        <input
-          type="text"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="Buscar por nombre..."
-          className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600"
-        />
+      <div className="space-y-3">
+        <div className="relative">
+          <Search
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre..."
+            className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("todos")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "todos"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Todos ({metricas.totalPacientes})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("con")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "con"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            En tratamiento ({metricas.conTratamiento})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("sin")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "sin"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Pendientes ({metricas.sinTratamiento})
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -182,7 +229,7 @@ export default function HomeProfesional() {
           ))
         ) : (
           <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-medium text-slate-400 shadow-sm">
-            No se encontraron pacientes activos.
+            No se encontraron pacientes activos con los filtros aplicados.
           </div>
         )}
       </div>
