@@ -34,6 +34,9 @@ const getTratamientoEstado = (tratamiento) =>
 const getTratamientoAvance = (tratamiento) =>
   Number(getValue(tratamiento, "avance", "Avance") ?? 0);
 
+const getPacienteTratamientos = (paciente) =>
+  getValue(paciente, "tratamientos", "Tratamientos") ?? [];
+
 const tieneTratamientoActivo = (tratamiento) =>
   !["cancelado", "finalizado"].includes(
     getTratamientoEstado(tratamiento).toLowerCase()
@@ -67,32 +70,10 @@ export default function HomeProfesional() {
     setLoading(true);
 
     try {
-      const pacientesResponse = await httpClient.get("/api/Profesional/pacientes");
-      const pacientesBase = pacientesResponse?.data ?? pacientesResponse ?? [];
+      const response = await httpClient.get("/api/profesional/home");
+      const data = response?.data ?? response ?? [];
 
-      const pacientesConTratamientos = await Promise.all(
-        pacientesBase.map(async (paciente) => {
-          const idPaciente = getPacienteId(paciente);
-
-          try {
-            const tratamientosResponse = await httpClient.get(
-              `/api/profesional/pacientes/${idPaciente}/tratamientos`
-            );
-            const tratamientos =
-              tratamientosResponse?.data ?? tratamientosResponse ?? [];
-
-            return {
-              ...paciente,
-              tratamientos: Array.isArray(tratamientos) ? tratamientos : [],
-            };
-          } catch (err) {
-            console.error("Error al traer tratamientos del paciente:", err);
-            return { ...paciente, tratamientos: [], tratamientosError: true };
-          }
-        })
-      );
-
-      setPacientes(pacientesConTratamientos);
+      setPacientes(Array.isArray(data) ? data : []);
       setError("");
     } catch (err) {
       console.error("Error al cargar el inicio profesional:", err);
@@ -109,7 +90,8 @@ export default function HomeProfesional() {
         .toLowerCase()
         .includes(busqueda.toLowerCase());
 
-      const tieneActivo = paciente.tratamientos.some(tieneTratamientoActivo);
+      const tieneActivo =
+        getPacienteTratamientos(paciente).some(tieneTratamientoActivo);
       let cumpleEstado = true;
       if (filtroEstado === "con") cumpleEstado = tieneActivo;
       if (filtroEstado === "sin") cumpleEstado = !tieneActivo;
@@ -120,11 +102,11 @@ export default function HomeProfesional() {
 
   const metricas = useMemo(() => {
     const conTratamiento = pacientes.filter((paciente) =>
-      paciente.tratamientos.some(tieneTratamientoActivo)
+      getPacienteTratamientos(paciente).some(tieneTratamientoActivo)
     );
 
     const alDia = conTratamiento.filter(
-      (paciente) => calcularProgreso(paciente.tratamientos) >= 100
+      (paciente) => calcularProgreso(getPacienteTratamientos(paciente)) >= 100
     );
 
     return {
@@ -258,11 +240,11 @@ function PacienteCard({
   paciente,
   onAssign,
 }) {
-  const tratamientosActivos = paciente.tratamientos.filter(tieneTratamientoActivo);
+  const tratamientos = getPacienteTratamientos(paciente);
+  const tratamientosActivos = tratamientos.filter(tieneTratamientoActivo);
   const tratamientoPrincipal = tratamientosActivos[0];
-  const progreso = calcularProgreso(paciente.tratamientos);
+  const progreso = calcularProgreso(tratamientos);
   const sinTratamiento = tratamientosActivos.length === 0;
-  const tratamientosError = paciente.tratamientosError;
   const idPaciente = getPacienteId(paciente);
   const nombre = getPacienteNombre(paciente);
 
@@ -280,19 +262,13 @@ function PacienteCard({
             </h3>
             <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
               {sinTratamiento
-                ? tratamientosError
-                  ? "No se pudieron consultar sus tratamientos"
-                  : "Sin tratamiento asignado"
+                ? "Sin tratamiento asignado"
                 : getTratamientoTitulo(tratamientoPrincipal)}
             </p>
           </div>
         </div>
 
-        {tratamientosError ? (
-          <div className="rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 lg:max-w-xs">
-            Reintentá actualizar antes de asignar.
-          </div>
-        ) : sinTratamiento ? (
+        {sinTratamiento ? (
           <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
         ) : (
           <ProgressSummary
