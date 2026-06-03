@@ -108,7 +108,7 @@ export default function QRSection() {
               Finalizar vinculación
             </button>
             <button
-              onCLick={handleShare}
+              onClick={handleShare}
               className="mt-6 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
             >
               Enviar por email
