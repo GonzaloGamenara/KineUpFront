@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search, UserRoundPlus, MoreVertical, Edit2 } from "lucide-react";
+import { CheckCircle2, Search, UserRoundPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
@@ -9,6 +9,7 @@ const getValue = (source, ...keys) => {
       return source[key];
     }
   }
+
   return undefined;
 };
 
@@ -32,6 +33,9 @@ const getTratamientoEstado = (tratamiento) =>
 
 const getTratamientoAvance = (tratamiento) =>
   Number(getValue(tratamiento, "avance", "Avance") ?? 0);
+
+const getPacienteTratamientos = (paciente) =>
+  getValue(paciente, "tratamientos", "Tratamientos") ?? [];
 
 const tieneTratamientoActivo = (tratamiento) =>
   !["cancelado", "finalizado"].includes(
@@ -57,8 +61,6 @@ export default function HomeProfesional() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [error, setError] = useState("");
-  
-  const [menuPacienteId, setMenuPacienteId] = useState(null);
 
   useEffect(() => {
     loadDashboard();
@@ -66,32 +68,12 @@ export default function HomeProfesional() {
 
   const loadDashboard = async () => {
     setLoading(true);
+
     try {
-      const pacientesResponse = await httpClient.get("/api/Profesional/pacientes");
-      const pacientesBase = pacientesResponse?.data ?? pacientesResponse ?? [];
+      const response = await httpClient.get("/api/profesional/home");
+      const data = response?.data ?? response ?? [];
 
-      const pacientesConTratamientos = await Promise.all(
-        pacientesBase.map(async (paciente) => {
-          const idPaciente = getPacienteId(paciente);
-          try {
-            const tratamientosResponse = await httpClient.get(
-              `/api/profesional/pacientes/${idPaciente}/tratamientos`
-            );
-            const tratamientos =
-              tratamientosResponse?.data ?? tratamientosResponse ?? [];
-
-            return {
-              ...paciente,
-              tratamientos: Array.isArray(tratamientos) ? tratamientos : [],
-            };
-          } catch (err) {
-            console.error("Error al traer tratamientos del paciente:", err);
-            return { ...paciente, tratamientos: [], tratamientosError: true };
-          }
-        })
-      );
-
-      setPacientes(pacientesConTratamientos);
+      setPacientes(Array.isArray(data) ? data : []);
       setError("");
     } catch (err) {
       console.error("Error al cargar el inicio profesional:", err);
@@ -108,7 +90,8 @@ export default function HomeProfesional() {
         .toLowerCase()
         .includes(busqueda.toLowerCase());
 
-      const tieneActivo = paciente.tratamientos.some(tieneTratamientoActivo);
+      const tieneActivo =
+        getPacienteTratamientos(paciente).some(tieneTratamientoActivo);
       let cumpleEstado = true;
       if (filtroEstado === "con") cumpleEstado = tieneActivo;
       if (filtroEstado === "sin") cumpleEstado = !tieneActivo;
@@ -119,10 +102,11 @@ export default function HomeProfesional() {
 
   const metricas = useMemo(() => {
     const conTratamiento = pacientes.filter((paciente) =>
-      paciente.tratamientos.some(tieneTratamientoActivo)
+      getPacienteTratamientos(paciente).some(tieneTratamientoActivo)
     );
+
     const alDia = conTratamiento.filter(
-      (paciente) => calcularProgreso(paciente.tratamientos) >= 100
+      (paciente) => calcularProgreso(getPacienteTratamientos(paciente)) >= 100
     );
 
     return {
@@ -147,7 +131,9 @@ export default function HomeProfesional() {
     <section className="space-y-5 animate-fade-in">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Hola de nuevo</h1>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900">
+            Hola de nuevo
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
             Así marcha el rendimiento de tus pacientes asignados.
           </p>
@@ -214,8 +200,6 @@ export default function HomeProfesional() {
             <PacienteCard
               key={getPacienteId(paciente)}
               paciente={paciente}
-              menuAbiertoId={menuPacienteId}
-              setMenuAbiertoId={setMenuPacienteId}
               onAssign={() =>
                 navigate(
                   `/profesional/pacientes/${getPacienteId(
@@ -252,34 +236,20 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function PacienteCard({ paciente, onAssign, menuAbiertoId, setMenuAbiertoId }) {
-  const navigate = useNavigate();
-  const tratamientosActivos = paciente.tratamientos.filter(tieneTratamientoActivo);
+function PacienteCard({
+  paciente,
+  onAssign,
+}) {
+  const tratamientos = getPacienteTratamientos(paciente);
+  const tratamientosActivos = tratamientos.filter(tieneTratamientoActivo);
   const tratamientoPrincipal = tratamientosActivos[0];
-  const progreso = calcularProgreso(paciente.tratamientos);
+  const progreso = calcularProgreso(tratamientos);
   const sinTratamiento = tratamientosActivos.length === 0;
-  const tratamientosError = paciente.tratamientosError;
   const idPaciente = getPacienteId(paciente);
   const nombre = getPacienteNombre(paciente);
 
-  const esEsteMenuAbierto = menuAbiertoId === idPaciente;
-
-  const handleToggleMenu = (e) => {
-    e.stopPropagation();
-    if (esEsteMenuAbierto) {
-      setMenuAbiertoId(null);
-    } else {
-      setMenuAbiertoId(idPaciente);
-    }
-  };
-
-  const handleModificarClick = () => {
-    setMenuAbiertoId(null);
-    navigate(`/profesional/pacientes/${idPaciente}/modificar-tratamiento`);
-  };
-
   return (
-    <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:bg-slate-50/60 relative">
+    <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:bg-slate-50/60">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-base font-bold text-[#007a3f]">
@@ -292,59 +262,20 @@ function PacienteCard({ paciente, onAssign, menuAbiertoId, setMenuAbiertoId }) {
             </h3>
             <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
               {sinTratamiento
-                ? tratamientosError
-                  ? "No se pudieron consultar sus tratamientos"
-                  : "Sin tratamiento asignado"
+                ? "Sin tratamiento asignado"
                 : getTratamientoTitulo(tratamientoPrincipal)}
             </p>
           </div>
         </div>
 
-        {tratamientosError ? (
-          <div className="rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 lg:max-w-xs">
-            Reintentá actualizar antes de asignar.
-          </div>
-        ) : sinTratamiento ? (
+        {sinTratamiento ? (
           <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
         ) : (
-          <div className="flex items-center gap-3 w-full lg:max-w-xs justify-between sm:justify-end relative">
-            <ProgressSummary
-              progreso={progreso}
-              completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
-              total={tratamientosActivos.length}
-            />
-            
-            {/* Botón de tres puntos */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={handleToggleMenu}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
-              >
-                <MoreVertical size={18} />
-              </button>
-
-              {esEsteMenuAbierto && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40 bg-transparent" 
-                    onClick={() => setMenuAbiertoId(null)} 
-                  />
-                  
-                  <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white border border-slate-100 shadow-xl z-50 py-1.5 animate-fade-in">
-                    <button
-                      type="button"
-                      onClick={handleModificarClick}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition text-left"
-                    >
-                      <Edit2 size={14} className="text-slate-400" />
-                      Modificar
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          <ProgressSummary
+            progreso={progreso}
+            completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
+            total={tratamientosActivos.length}
+          />
         )}
       </div>
     </article>
@@ -367,13 +298,13 @@ function AssignButton({ idPaciente, onAssign }) {
 
 function ProgressSummary({ progreso, completados, total }) {
   return (
-    <div className="flex-1 min-w-0 space-y-1">
+    <div className="w-full space-y-1 lg:max-w-xs">
       <div className="flex items-end justify-between text-[10px] font-bold">
         <span className="font-semibold uppercase tracking-wider text-slate-400">
-          Progreso
+          Progreso de tratamientos
         </span>
         <span className="flex items-center gap-1 text-[#007a3f]">
-          <CheckCircle2 size={12} />
+          <CheckCircle2 size={13} />
           {completados}/{total} ({progreso}%)
         </span>
       </div>
