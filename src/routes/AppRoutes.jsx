@@ -17,6 +17,7 @@ import DetallePaciente from "../views/profesional/DetallePaciente.jsx";
 import DetalleRutina from "../views/paciente/DetalleRutina.jsx";
 import HomeProfesional from "../views/profesional/HomeProfesional.jsx";
 import AsignarTratamiento from "../views/profesional/AsignarTratamiento.jsx";
+import ModificarTratamiento from "../views/profesional/ModificarTratamiento.jsx";
 
 export default function AppRoutes() {
   return (
@@ -52,6 +53,10 @@ export default function AppRoutes() {
           <Route
             path="pacientes/:idPaciente/asignar-tratamiento"
             element={<AsignarTratamiento />}
+          />
+          <Route 
+            path="pacientes/:idPaciente/modificar-tratamiento"
+            element={<ModificarTratamiento />} 
           />
         </Route>
       </Route>
