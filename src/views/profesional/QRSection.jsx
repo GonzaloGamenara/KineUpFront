@@ -16,7 +16,7 @@ export default function QRSection() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const qrUrl = `${URL_FRONT}:${PUERTO_FRONT}/paciente/vincular/${tokenQr}`;
+  const qrUrl = `${URL_FRONT}:${PUERTO_FRONT}/vincular/pacientes/${tokenQr}`;
 
   const generarQR = async () => {
     try {
@@ -110,7 +110,7 @@ export default function QRSection() {
               onClick={() => setMostrarConfirmacion(true)}
               className="w-full rounded-2xl bg-red-50 py-4 text-sm font-bold text-red-600 hover:bg-red-100 transition-all"
             >
-              Finalizar vinculación
+              Finalizar vinculación 
             </button>
 
             <button
@@ -127,7 +127,7 @@ export default function QRSection() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <h2 className="text-xl font-bold text-slate-900">
-              Finalizar vinculación
+              Finalizar y Volver
             </h2>
 
             <p className="mt-3 text-slate-600">
