@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, ClipboardList, Search } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
 const getValue = (source, ...keys) => {
@@ -43,6 +43,20 @@ const getEjercicios = (plantilla) =>
 
 const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
 
+const getTratamientoId = (tratamiento) =>
+  getValue(tratamiento, "idTratamiento", "IdTratamiento");
+
+const getTratamientoTitulo = (tratamiento) =>
+  getValue(tratamiento, "titulo", "Titulo") ?? "Tratamiento sin titulo";
+
+const getTratamientoEstado = (tratamiento) =>
+  getValue(tratamiento, "estado", "Estado") ?? "";
+
+const isTratamientoActivo = (tratamiento) =>
+  !["cancelado", "finalizado"].includes(
+    getTratamientoEstado(tratamiento).toLowerCase()
+  );
+
 const contieneTexto = (value, search) =>
   String(value ?? "")
     .toLowerCase()
@@ -51,13 +65,16 @@ const contieneTexto = (value, search) =>
 export default function ModificarTratamiento() {
   const { idPaciente } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [paciente, setPaciente] = useState(null);
   const [plantillas, setPlantillas] = useState([]);
+  const [tratamientos, setTratamientos] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [error, setError] = useState("");
+  const idTratamientoOrigen = location.state?.idTratamiento;
 
   useEffect(() => {
     loadData();
@@ -66,14 +83,18 @@ export default function ModificarTratamiento() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pacienteResponse, plantillasResponse] = await Promise.all([
+      const [pacienteResponse, plantillasResponse, tratamientosResponse] = await Promise.all([
         httpClient.get(`/api/Profesional/pacientes/${idPaciente}`),
         httpClient.get("/api/profesional/tratamientos-plantilla"),
+        httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
       ]);
 
       const plantillasData = plantillasResponse?.data ?? plantillasResponse ?? [];
+      const tratamientosData =
+        tratamientosResponse?.data ?? tratamientosResponse ?? [];
       setPaciente(pacienteResponse?.data ?? pacienteResponse ?? null);
       setPlantillas(Array.isArray(plantillasData) ? plantillasData : []);
+      setTratamientos(Array.isArray(tratamientosData) ? tratamientosData : []);
       setError("");
     } catch (err) {
       console.error("Error al cargar modificación de tratamiento:", err);
@@ -95,15 +116,36 @@ export default function ModificarTratamiento() {
     (plantilla) => String(getPlantillaId(plantilla)) === String(selectedId)
   );
 
+  const tratamientosActivos = useMemo(
+    () => tratamientos.filter(isTratamientoActivo),
+    [tratamientos]
+  );
+
+  const tratamientoOrigen = useMemo(() => {
+    if (idTratamientoOrigen) {
+      return tratamientos.find(
+        (tratamiento) =>
+          String(getTratamientoId(tratamiento)) === String(idTratamientoOrigen)
+      );
+    }
+
+    return tratamientosActivos.length === 1 ? tratamientosActivos[0] : null;
+  }, [idTratamientoOrigen, tratamientos, tratamientosActivos]);
+
   const modificarTratamiento = async () => {
-    if (!selectedId) return;
+    if (!selectedId || !tratamientoOrigen) return;
     setAssigning(true);
     try {
+      await httpClient.put(
+        `/api/profesional/tratamientos/${getTratamientoId(tratamientoOrigen)}`,
+        { estado: "Cancelado" }
+      );
+
       await httpClient.post(
         `/api/profesional/tratamientos-plantilla/${selectedId}/asignar`,
         { idPaciente: Number(idPaciente) }
       );
-      navigate("/profesional/home");
+      navigate(`/profesional/pacientes/${idPaciente}/tratamientos`);
     } catch (err) {
       console.error("Error al modificar tratamiento:", err);
       setError(err?.message || "No se pudo modificar el tratamiento.");
@@ -151,6 +193,22 @@ export default function ModificarTratamiento() {
           Al confirmar, el tratamiento activo actual será reemplazado por el nuevo. El paciente verá el cambio reflejado inmediatamente en su app.
         </p>
       </div>
+
+      <section className="rounded-3xl bg-white p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Tratamiento a reemplazar
+        </p>
+        <h2 className="mt-2 text-lg font-bold text-slate-900">
+          {tratamientoOrigen
+            ? getTratamientoTitulo(tratamientoOrigen)
+            : "No hay un tratamiento seleccionado"}
+        </h2>
+        {!tratamientoOrigen && (
+          <p className="mt-2 text-sm leading-6 text-red-600">
+            Volve al listado de tratamientos y elegi cual queres modificar.
+          </p>
+        )}
+      </section>
 
       {error && <ErrorState message={error} onRetry={loadData} />}
 
@@ -203,7 +261,7 @@ export default function ModificarTratamiento() {
           <button
             type="button"
             onClick={modificarTratamiento}
-            disabled={!selectedId || assigning}
+            disabled={!selectedId || !tratamientoOrigen || assigning}
             className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CheckCircle2 size={18} />
@@ -223,7 +281,7 @@ export default function ModificarTratamiento() {
             <button
                 type="button"
                 onClick={modificarTratamiento}
-                disabled={!selectedId || assigning}
+                disabled={!selectedId || !tratamientoOrigen || assigning}
                 className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition active:scale-[0.98] disabled:opacity-50"
             >
                 <CheckCircle2 size={16} />

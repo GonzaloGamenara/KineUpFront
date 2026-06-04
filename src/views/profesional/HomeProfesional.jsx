@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search, UserRoundPlus } from "lucide-react";
+import { ArrowRight, CheckCircle2, Search, UserRoundPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
@@ -200,6 +200,11 @@ export default function HomeProfesional() {
             <PacienteCard
               key={getPacienteId(paciente)}
               paciente={paciente}
+              onOpenTreatment={() =>
+                navigate(
+                  `/profesional/pacientes/${getPacienteId(paciente)}/tratamientos`
+                )
+              }
               onAssign={() =>
                 navigate(
                   `/profesional/pacientes/${getPacienteId(
@@ -238,6 +243,7 @@ function ErrorState({ message, onRetry }) {
 
 function PacienteCard({
   paciente,
+  onOpenTreatment,
   onAssign,
 }) {
   const tratamientos = getPacienteTratamientos(paciente);
@@ -247,9 +253,27 @@ function PacienteCard({
   const sinTratamiento = tratamientosActivos.length === 0;
   const idPaciente = getPacienteId(paciente);
   const nombre = getPacienteNombre(paciente);
+  const subtitulo =
+    tratamientosActivos.length === 0
+      ? "Sin tratamiento asignado"
+      : tratamientosActivos.length === 1
+        ? getTratamientoTitulo(tratamientoPrincipal)
+        : "";
 
   return (
-    <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:bg-slate-50/60">
+    <article
+      onClick={onOpenTreatment}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenTreatment();
+        }
+      }}
+      className="cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-emerald-200 hover:bg-slate-50/60 active:scale-[0.99]"
+      aria-label={`Ver tratamientos de ${nombre}`}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-base font-bold text-[#007a3f]">
@@ -260,22 +284,25 @@ function PacienteCard({
             <h3 className="truncate text-sm font-bold leading-tight text-slate-800">
               {nombre}
             </h3>
-            <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
-              {sinTratamiento
-                ? "Sin tratamiento asignado"
-                : getTratamientoTitulo(tratamientoPrincipal)}
-            </p>
+            {subtitulo && (
+              <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
+                {subtitulo}
+              </p>
+            )}
           </div>
         </div>
 
         {sinTratamiento ? (
           <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
         ) : (
-          <ProgressSummary
-            progreso={progreso}
-            completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
-            total={tratamientosActivos.length}
-          />
+          <div className="flex w-full items-center gap-3 lg:w-auto">
+            <ProgressSummary
+              progreso={progreso}
+              completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
+              total={tratamientosActivos.length}
+            />
+            <ArrowRight className="hidden shrink-0 text-slate-300 lg:block" size={20} />
+          </div>
         )}
       </div>
     </article>
@@ -286,7 +313,11 @@ function AssignButton({ idPaciente, onAssign }) {
   return (
     <button
       type="button"
-      onClick={onAssign}
+      onClick={(event) => {
+        event.stopPropagation();
+        onAssign();
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
       className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] sm:w-auto"
       aria-label={`Asignar tratamiento al paciente ${idPaciente}`}
     >
