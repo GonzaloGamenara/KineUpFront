@@ -107,14 +107,14 @@ export default function DetalleTratamientos() {
     setDeletingId(idTratamiento);
 
     try {
-      await httpClient.put(`/api/profesional/tratamientos/${idTratamiento}`, {
-        estado: "Cancelado",
-      });
+      const cancelado = await httpClient.patch(
+        `/api/profesional/tratamientos/${idTratamiento}/cancelar`
+      );
 
       setTratamientos((current) =>
         current.map((tratamiento) =>
           getTratamientoId(tratamiento) === idTratamiento
-            ? { ...tratamiento, estado: "Cancelado" }
+            ? { ...tratamiento, ...(cancelado ?? {}), estado: "Cancelado" }
             : tratamiento
         )
       );

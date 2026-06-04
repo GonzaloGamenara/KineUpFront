@@ -136,14 +136,11 @@ export default function ModificarTratamiento() {
     if (!selectedId || !tratamientoOrigen) return;
     setAssigning(true);
     try {
-      await httpClient.put(
-        `/api/profesional/tratamientos/${getTratamientoId(tratamientoOrigen)}`,
-        { estado: "Cancelado" }
-      );
-
       await httpClient.post(
-        `/api/profesional/tratamientos-plantilla/${selectedId}/asignar`,
-        { idPaciente: Number(idPaciente) }
+        `/api/profesional/tratamientos/${getTratamientoId(
+          tratamientoOrigen
+        )}/reemplazar`,
+        { idTratamientoPlantilla: Number(selectedId) }
       );
       navigate(`/profesional/pacientes/${idPaciente}/tratamientos`);
     } catch (err) {
