@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { httpClient } from "../../api/httpClient.js";
 import { useNavigate } from "react-router-dom";
+import { httpClient } from "../../api/httpClient.js";
 import { useAuth } from "../../auth/AuthContext";
 import { handleApiError } from "../../api/handleError.js";
 
@@ -9,41 +9,37 @@ const URL_FRONT = import.meta.env.VITE_URL_FRONT;
 const PUERTO_FRONT = import.meta.env.VITE_PUERTO_FRONT;
 
 export default function QRSection() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [tokenQr, setTokenQr] = useState("");
+  const [error, setError] = useState("");
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const qrUrl = `${URL_FRONT}:${PUERTO_FRONT}/paciente/vincular/${tokenQr}`;
 
-  const generarQR = async () => {
-    setLoading(true);
+  useEffect(() => {
+    const cargarQR = async () => {
+      setLoading(true);
+      setError("");
 
-    try {
-      const data = await httpClient.post("/api/Vinculation/generar-qr");
+      try {
+        const data = await httpClient.post("/api/Vinculation/generar-qr");
+        setTokenQr(data?.token ?? data?.Token ?? "");
+      } catch (err) {
+        console.error(err);
 
-      setTokenQr(data.token);
-    } catch (err) {
-      console.error(err);
+        const handled = handleApiError(err, logout, navigate);
 
-      const handled = handleApiError(err, logout, navigate);
+        if (handled) return;
 
-      if (handled) return;
+        setError("No se pudo cargar el QR.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      alert("No se pudo generar el QR.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const finalizarQR = () => {
-    setTokenQr("");
-  };
-
-  {
-    /* FUNCION PARA MANEJAR EL CALLBACK DEL SHARE POR EMAIL */
-  }
-  const handleShare = () => {};
+    cargarQR();
+  }, [logout, navigate]);
 
   return (
     <section className="space-y-5 animate-fade-in">
@@ -55,13 +51,20 @@ export default function QRSection() {
           Vincular Paciente
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          Generá un código QR para que tu paciente pueda vincularse a tu cuenta.
+          El paciente puede escanear este codigo para vincularse a tu cuenta.
         </p>
       </header>
 
       <div className="rounded-[2rem] bg-white p-6 shadow-sm">
         <div className="flex min-h-[280px] items-center justify-center rounded-[1.5rem] border border-slate-100 bg-slate-50 p-5">
-          {tokenQr ? (
+          {loading ? (
+            <div className="text-center">
+              <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-600" />
+              <p className="text-sm font-medium text-slate-600">
+                Cargando QR...
+              </p>
+            </div>
+          ) : tokenQr ? (
             <QRCodeSVG
               value={qrUrl}
               size={220}
@@ -70,6 +73,13 @@ export default function QRSection() {
               level="H"
               includeMargin
             />
+          ) : error ? (
+            <div className="text-center">
+              <p className="text-sm font-semibold text-red-600">{error}</p>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                Volve a ingresar a esta pantalla para intentarlo nuevamente.
+              </p>
+            </div>
           ) : (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-100">
@@ -77,42 +87,17 @@ export default function QRSection() {
               </div>
 
               <p className="text-sm font-medium text-slate-600">
-                Todavía no generaste un QR
+                No hay un QR disponible.
               </p>
             </div>
           )}
         </div>
 
-        {tokenQr && (
+        {!loading && tokenQr && (
           <div className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-center">
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-              Código activo
+              Codigo activo por 24 horas
             </p>
-          </div>
-        )}
-
-        {!tokenQr ? (
-          <button
-            onClick={generarQR}
-            disabled={loading}
-            className="mt-6 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
-          >
-            {loading ? "Generando..." : "Generar QR"}
-          </button>
-        ) : (
-          <div className="flex gap-5">
-            <button
-              onClick={finalizarQR}
-              className="mt-6 w-full rounded-2xl bg-red-50 py-4 text-sm font-bold text-red-600 active:scale-[0.98]"
-            >
-              Finalizar vinculación
-            </button>
-            <button
-              onClick={handleShare}
-              className="mt-6 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-sm active:scale-[0.98] disabled:opacity-60"
-            >
-              Enviar por email
-            </button>
           </div>
         )}
       </div>
