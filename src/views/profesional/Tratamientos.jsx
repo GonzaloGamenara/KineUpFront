@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Activity, FolderHeart, RefreshCw, Search } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  FolderHeart,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
 const getValue = (source, ...keys) => {
@@ -14,11 +23,11 @@ const getValue = (source, ...keys) => {
 
 const getTituloTratamiento = (tratamiento) =>
   getValue(tratamiento, "titulo", "Titulo", "nombre", "Nombre") ??
-  "Tratamiento sin título";
+  "Tratamiento sin titulo";
 
 const getDescripcionTratamiento = (tratamiento) =>
   getValue(tratamiento, "descripcion", "Descripcion") ??
-  "Sin descripción asignada.";
+  "Sin descripcion asignada.";
 
 const getIdTratamiento = (tratamiento) =>
   getValue(
@@ -52,10 +61,13 @@ const contieneTexto = (value, search) =>
     .includes(search.trim().toLowerCase());
 
 export default function Tratamientos() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [tratamientos, setTratamientos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [error, setError] = useState("");
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     loadTratamientos();
@@ -82,17 +94,23 @@ export default function Tratamientos() {
     }
   };
 
+  const tratamientosActivos = useMemo(
+    () => tratamientos.filter(isActivo),
+    [tratamientos]
+  );
+
   const tratamientosFiltrados = useMemo(() => {
-    return tratamientos.filter(
+    return tratamientosActivos.filter(
       (tratamiento) =>
         contieneTexto(getTituloTratamiento(tratamiento), busqueda) ||
         contieneTexto(getDescripcionTratamiento(tratamiento), busqueda)
     );
-  }, [busqueda, tratamientos]);
+  }, [busqueda, tratamientosActivos]);
 
   const metricas = useMemo(() => {
-    return tratamientos.reduce(
+    return tratamientosActivos.reduce(
       (totales, tratamiento) => ({
+        plantillas: totales.plantillas + 1,
         etapas: totales.etapas + getEtapas(tratamiento).filter(isActivo).length,
         rutinas:
           totales.rutinas + getRutinas(tratamiento).filter(isActivo).length,
@@ -100,9 +118,37 @@ export default function Tratamientos() {
           totales.ejercicios +
           getEjercicios(tratamiento).filter(isActivo).length,
       }),
-      { etapas: 0, rutinas: 0, ejercicios: 0 }
+      { plantillas: 0, etapas: 0, rutinas: 0, ejercicios: 0 }
     );
-  }, [tratamientos]);
+  }, [tratamientosActivos]);
+
+  const desactivarPlantilla = async () => {
+    if (!confirmTarget) return;
+
+    const idTratamientoPlantilla = getIdTratamiento(confirmTarget);
+    setDeletingId(idTratamientoPlantilla);
+
+    try {
+      await httpClient.patch(
+        `/api/profesional/tratamientos-plantilla/${idTratamientoPlantilla}/desactivar`
+      );
+
+      setTratamientos((current) =>
+        current.map((tratamiento) =>
+          getIdTratamiento(tratamiento) === idTratamientoPlantilla
+            ? { ...tratamiento, activo: false, Activo: false }
+            : tratamiento
+        )
+      );
+      setConfirmTarget(null);
+      setError("");
+    } catch (err) {
+      console.error("Error al desactivar plantilla:", err);
+      setError(err?.message || "No se pudo eliminar la plantilla.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const hayBusqueda = busqueda.trim().length > 0;
 
@@ -124,21 +170,39 @@ export default function Tratamientos() {
             Mis Tratamientos
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Plantillas cargadas para asignar y seguir la rehabilitación de tus
+            Plantillas cargadas para asignar y seguir la rehabilitacion de tus
             pacientes.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={loadTratamientos}
-          disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-          Actualizar
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={loadTratamientos}
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            Actualizar
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/profesional/tratamientos/nueva")}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98]"
+          >
+            <Plus size={18} />
+            Nueva plantilla
+          </button>
+        </div>
       </header>
+
+      <div className="grid gap-3 md:grid-cols-4">
+        <MetricCard label="Plantillas" value={metricas.plantillas} />
+        <MetricCard label="Etapas" value={metricas.etapas} />
+        <MetricCard label="Rutinas" value={metricas.rutinas} />
+        <MetricCard label="Ejercicios" value={metricas.ejercicios} />
+      </div>
 
       {error && <ErrorState message={error} onRetry={loadTratamientos} />}
 
@@ -150,7 +214,7 @@ export default function Tratamientos() {
 
         <input
           type="text"
-          placeholder="Buscar por nombre o descripción"
+          placeholder="Buscar por nombre o descripcion"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500"
@@ -169,16 +233,16 @@ export default function Tratamientos() {
             onClick={() => setBusqueda("")}
             className="text-sm font-bold text-emerald-700"
           >
-            Limpiar búsqueda
+            Limpiar busqueda
           </button>
         )}
       </div>
 
       {!error &&
-        (tratamientos.length < 1 ? (
-          <EmptyState title="Todavía no tenés plantillas de tratamiento cargadas" />
+        (tratamientosActivos.length < 1 ? (
+          <EmptyState title="Todavia no tenes plantillas de tratamiento cargadas" />
         ) : tratamientosFiltrados.length < 1 ? (
-          <EmptyState title="No encontramos tratamientos con esa búsqueda" />
+          <EmptyState title="No encontramos tratamientos con esa busqueda" />
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
             {tratamientosFiltrados.map((tratamiento) => (
@@ -188,10 +252,21 @@ export default function Tratamientos() {
                   getTituloTratamiento(tratamiento)
                 }
                 tratamiento={tratamiento}
+                deleting={deletingId === getIdTratamiento(tratamiento)}
+                onDelete={() => setConfirmTarget(tratamiento)}
               />
             ))}
           </div>
         ))}
+
+      {confirmTarget && (
+        <ConfirmDeleteDialog
+          tratamiento={confirmTarget}
+          deleting={deletingId === getIdTratamiento(confirmTarget)}
+          onCancel={() => setConfirmTarget(null)}
+          onConfirm={desactivarPlantilla}
+        />
+      )}
     </section>
   );
 }
@@ -235,36 +310,39 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function TratamientoCard({ tratamiento }) {
+function TratamientoCard({ tratamiento, deleting, onDelete }) {
   const titulo = getTituloTratamiento(tratamiento);
   const descripcion = getDescripcionTratamiento(tratamiento);
   const etapas = getEtapas(tratamiento).filter(isActivo);
   const rutinas = getRutinas(tratamiento).filter(isActivo);
   const ejercicios = getEjercicios(tratamiento).filter(isActivo);
-  const activo = isActivo(tratamiento);
 
   return (
-    <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
           <Activity size={22} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-bold leading-tight text-slate-900">
-              {titulo}
-            </h2>
-            {!activo && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">
-                Inactiva
-              </span>
-            )}
-          </div>
+          <h2 className="text-base font-bold leading-tight text-slate-900">
+            {titulo}
+          </h2>
           <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
             {descripcion}
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-red-100 bg-red-50 text-red-600 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={`Eliminar plantilla ${titulo}`}
+          title="Eliminar plantilla"
+        >
+          <Trash2 size={18} />
+        </button>
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4 text-sm">
@@ -281,6 +359,49 @@ function CardMetric({ label, value }) {
     <div>
       <p className="text-lg font-bold text-slate-900">{value}</p>
       <p className="text-xs font-semibold text-slate-400">{label}</p>
+    </div>
+  );
+}
+
+function ConfirmDeleteDialog({ tratamiento, deleting, onCancel, onConfirm }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end bg-slate-950/40 p-4 sm:items-center sm:justify-center">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-700">
+            <AlertTriangle size={22} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Eliminar plantilla
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Vas a eliminar la plantilla "{getTituloTratamiento(tratamiento)}".
+              Esta accion la quitara del listado de plantillas disponibles para
+              asignar a pacientes.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={deleting}
+            className="rounded-2xl px-4 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={deleting}
+            className="rounded-2xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {deleting ? "Eliminando..." : "Eliminar plantilla"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
