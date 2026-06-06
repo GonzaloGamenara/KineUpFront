@@ -1,27 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Search, UserRoundPlus } from "lucide-react";
+import { ArrowRight, CheckCircle2, Search, UserRoundPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
+// ==========================================
+// FUNCIONES AUXILIARES
+// ==========================================
 const getValue = (source, ...keys) => {
   for (const key of keys) {
     if (source?.[key] !== undefined && source?.[key] !== null) {
       return source[key];
     }
   }
-
   return undefined;
 };
 
-const getPacienteId = (paciente) =>
-  getValue(paciente, "idPaciente", "IdPaciente");
+const getPacienteId = (paciente) => getValue(paciente, "idPaciente", "IdPaciente");
 
 const getPacienteNombre = (paciente) => {
   const nombreCompleto = getValue(paciente, "nombreCompleto", "NombreCompleto");
   const nombre = `${getValue(paciente, "nombre", "Nombre") ?? ""} ${
     getValue(paciente, "apellido", "Apellido") ?? ""
   }`.trim();
-
   return nombreCompleto || nombre || "Paciente";
 };
 
@@ -38,22 +38,19 @@ const getPacienteTratamientos = (paciente) =>
   getValue(paciente, "tratamientos", "Tratamientos") ?? [];
 
 const tieneTratamientoActivo = (tratamiento) =>
-  !["cancelado", "finalizado"].includes(
-    getTratamientoEstado(tratamiento).toLowerCase()
-  );
+  !["cancelado", "finalizado"].includes(getTratamientoEstado(tratamiento).toLowerCase());
 
 const calcularProgreso = (tratamientos) => {
   const activos = tratamientos.filter(tieneTratamientoActivo);
   if (activos.length < 1) return 0;
 
-  const total = activos.reduce(
-    (sum, tratamiento) => sum + getTratamientoAvance(tratamiento),
-    0
-  );
-
+  const total = activos.reduce((sum, tratamiento) => sum + getTratamientoAvance(tratamiento), 0);
   return Math.round(total / activos.length);
 };
 
+// ==========================================
+// COMPONENTE PRINCIPAL
+// ==========================================
 export default function HomeProfesional() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -68,11 +65,9 @@ export default function HomeProfesional() {
 
   const loadDashboard = async () => {
     setLoading(true);
-
     try {
       const response = await httpClient.get("/api/profesional/home");
       const data = response?.data ?? response ?? [];
-
       setPacientes(Array.isArray(data) ? data : []);
       setError("");
     } catch (err) {
@@ -90,8 +85,7 @@ export default function HomeProfesional() {
         .toLowerCase()
         .includes(busqueda.toLowerCase());
 
-      const tieneActivo =
-        getPacienteTratamientos(paciente).some(tieneTratamientoActivo);
+      const tieneActivo = getPacienteTratamientos(paciente).some(tieneTratamientoActivo);
       let cumpleEstado = true;
       if (filtroEstado === "con") cumpleEstado = tieneActivo;
       if (filtroEstado === "sin") cumpleEstado = !tieneActivo;
@@ -117,106 +111,94 @@ export default function HomeProfesional() {
     };
   }, [pacientes]);
 
+  // ESTADO DE CARGA (SKELETON)
   if (loading && pacientes.length === 0) {
     return (
-      <section className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm font-medium text-slate-500">
-          Cargando resumen de actividad...
-        </p>
+      <section className="mx-auto w-full max-w-5xl space-y-6 animate-pulse px-4 sm:px-6">
+        <div className="h-10 w-48 rounded-md bg-slate-200"></div>
+        <div className="h-4 w-72 rounded-md bg-slate-200 mb-8"></div>
+        <div className="h-14 w-full rounded-2xl bg-slate-200"></div>
+        <div className="flex gap-2"><div className="h-8 w-24 rounded-full bg-slate-200"></div><div className="h-8 w-32 rounded-full bg-slate-200"></div></div>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <div key={i} className="h-24 w-full rounded-2xl bg-slate-200"></div>)}
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="space-y-5 animate-fade-in">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">
-            Hola de nuevo
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Así marcha el rendimiento de tus pacientes asignados.
-          </p>
-        </div>
+    <section className="mx-auto w-full max-w-5xl space-y-6 sm:space-y-8 animate-fade-in pb-10 px-4 sm:px-6 mt-4 sm:mt-0">
+      
+      {/* HEADER */}
+      <header className="flex flex-col gap-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Hola de nuevo
+        </h1>
+        <p className="text-sm sm:text-base text-slate-500 font-medium">
+          Así marcha el rendimiento de tus pacientes asignados.
+        </p>
       </header>
 
       {error && <ErrorState message={error} onRetry={loadDashboard} />}
 
-      <div className="space-y-3">
-        <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-          />
+      {/* CONTROLES (BÚSQUEDA Y FILTROS) */}
+      <div className="space-y-4 sm:space-y-5">
+        
+        {/* Buscador */}
+        <div className="relative group">
+          <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#007A3F]" />
           <input
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por nombre..."
-            className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600"
+            className="w-full h-12 sm:h-14 rounded-2xl border border-slate-200 bg-white pl-12 pr-4 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-[#007A3F] focus:ring-4 focus:ring-green-50 shadow-sm"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setFiltroEstado("todos")}
-            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
-              filtroEstado === "todos"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            Todos ({metricas.totalPacientes})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFiltroEstado("con")}
-            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
-              filtroEstado === "con"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            En tratamiento ({metricas.conTratamiento})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFiltroEstado("sin")}
-            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
-              filtroEstado === "sin"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            Pendientes ({metricas.sinTratamiento})
-          </button>
+        {/* Chips de Filtro */}
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <FilterChip 
+            label={`Todos (${metricas.totalPacientes})`} 
+            active={filtroEstado === "todos"} 
+            onClick={() => setFiltroEstado("todos")} 
+          />
+          <FilterChip 
+            label={`En tratamiento (${metricas.conTratamiento})`} 
+            active={filtroEstado === "con"} 
+            onClick={() => setFiltroEstado("con")} 
+          />
+          <FilterChip 
+            label={`Pendientes (${metricas.sinTratamiento})`} 
+            active={filtroEstado === "sin"} 
+            onClick={() => setFiltroEstado("sin")} 
+          />
         </div>
       </div>
 
-      <div className="space-y-3">
+      {/* LISTA DE PACIENTES */}
+      <div className="space-y-3 sm:space-y-4">
         {pacientesFiltrados.length > 0 ? (
           pacientesFiltrados.map((paciente) => (
             <PacienteCard
               key={getPacienteId(paciente)}
               paciente={paciente}
               onOpenTreatment={() =>
-                navigate(
-                  `/profesional/pacientes/${getPacienteId(paciente)}/tratamientos`
-                )
+                navigate(`/profesional/pacientes/${getPacienteId(paciente)}/tratamientos`)
               }
               onAssign={() =>
-                navigate(
-                  `/profesional/pacientes/${getPacienteId(
-                    paciente
-                  )}/asignar-tratamiento`
-                )
+                navigate(`/profesional/pacientes/${getPacienteId(paciente)}/asignar-tratamiento`)
               }
             />
           ))
         ) : (
-          <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-medium text-slate-400 shadow-sm">
-            No se encontraron pacientes activos con los filtros aplicados.
+          <div className="rounded-[2rem] border border-dashed border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-slate-50 text-slate-400">
+              <Users size={28} />
+            </div>
+            <p className="font-semibold text-slate-600 text-sm sm:text-base">
+              No se encontraron pacientes activos con los filtros aplicados.
+            </p>
           </div>
         )}
       </div>
@@ -224,15 +206,35 @@ export default function HomeProfesional() {
   );
 }
 
+// ==========================================
+// SUB-COMPONENTES
+// ==========================================
+
+function FilterChip({ label, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold transition-all active:scale-95 ${
+        active
+          ? "bg-[#007A3F] text-white shadow-md border border-[#007A3F]"
+          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 function ErrorState({ message, onRetry }) {
   return (
-    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="font-medium">{message}</p>
+    <div className="rounded-2xl border border-red-200 bg-red-50 p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p className="font-semibold text-red-800 text-sm">{message}</p>
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center justify-center rounded-xl bg-white px-3 py-2 text-xs font-bold text-red-700 shadow-sm transition hover:bg-red-100"
+          className="w-full sm:w-auto rounded-xl bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm border border-red-100 hover:bg-red-50"
         >
           Reintentar
         </button>
@@ -241,11 +243,7 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function PacienteCard({
-  paciente,
-  onOpenTreatment,
-  onAssign,
-}) {
+function PacienteCard({ paciente, onOpenTreatment, onAssign }) {
   const tratamientos = getPacienteTratamientos(paciente);
   const tratamientosActivos = tratamientos.filter(tieneTratamientoActivo);
   const tratamientoPrincipal = tratamientosActivos[0];
@@ -253,12 +251,12 @@ function PacienteCard({
   const sinTratamiento = tratamientosActivos.length === 0;
   const idPaciente = getPacienteId(paciente);
   const nombre = getPacienteNombre(paciente);
-  const subtitulo =
-    tratamientosActivos.length === 0
-      ? "Sin tratamiento asignado"
-      : tratamientosActivos.length === 1
-        ? getTratamientoTitulo(tratamientoPrincipal)
-        : "";
+  
+  const subtitulo = sinTratamiento
+    ? "Sin tratamiento asignado"
+    : tratamientosActivos.length === 1
+      ? getTratamientoTitulo(tratamientoPrincipal)
+      : `${tratamientosActivos.length} tratamientos activos`;
 
   return (
     <article
@@ -271,39 +269,45 @@ function PacienteCard({
           onOpenTreatment();
         }
       }}
-      className="cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-emerald-200 hover:bg-slate-50/60 active:scale-[0.99]"
+      className="group cursor-pointer rounded-[1.25rem] sm:rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-md active:scale-[0.99]"
       aria-label={`Ver tratamientos de ${nombre}`}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-base font-bold text-[#007a3f]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        {/* Info del Paciente */}
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-50 text-lg font-bold text-[#007A3F] group-hover:bg-green-100 transition-colors">
             {(nombre || "P").charAt(0)}
           </div>
 
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-bold leading-tight text-slate-800">
+            <h3 className="truncate text-[15px] sm:text-base font-bold leading-tight text-slate-900 group-hover:text-[#007A3F] transition-colors">
               {nombre}
             </h3>
-            {subtitulo && (
-              <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
-                {subtitulo}
-              </p>
-            )}
+            <p className="mt-0.5 truncate text-xs sm:text-sm font-medium text-slate-500">
+              {subtitulo}
+            </p>
           </div>
         </div>
 
-        {sinTratamiento ? (
-          <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
-        ) : (
-          <div className="flex w-full items-center gap-3 lg:w-auto">
-            <ProgressSummary
-              progreso={progreso}
-              completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
-              total={tratamientosActivos.length}
-            />
-            <ArrowRight className="hidden shrink-0 text-slate-300 lg:block" size={20} />
-          </div>
-        )}
+        {/* Acciones o Progreso */}
+        <div className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-end">
+          {sinTratamiento ? (
+            <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
+          ) : (
+            <div className="flex w-full items-center gap-4 sm:w-auto bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none">
+              <ProgressSummary
+                progreso={progreso}
+                completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
+                total={tratamientosActivos.length}
+              />
+              <div className="hidden shrink-0 h-8 w-8 sm:flex items-center justify-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-[#007A3F] group-hover:text-white transition-colors">
+                <ArrowRight size={18} />
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </article>
   );
@@ -318,10 +322,10 @@ function AssignButton({ idPaciente, onAssign }) {
         onAssign();
       }}
       onKeyDown={(event) => event.stopPropagation()}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] sm:w-auto"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#007A3F] hover:bg-[#006432] px-4 py-3 sm:py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] sm:w-auto"
       aria-label={`Asignar tratamiento al paciente ${idPaciente}`}
     >
-      <UserRoundPlus size={17} />
+      <UserRoundPlus size={18} />
       Asignar tratamiento
     </button>
   );
@@ -329,20 +333,20 @@ function AssignButton({ idPaciente, onAssign }) {
 
 function ProgressSummary({ progreso, completados, total }) {
   return (
-    <div className="w-full space-y-1 lg:max-w-xs">
-      <div className="flex items-end justify-between text-[10px] font-bold">
-        <span className="font-semibold uppercase tracking-wider text-slate-400">
-          Progreso de tratamientos
+    <div className="w-full space-y-1.5 sm:max-w-[200px] min-w-[150px]">
+      <div className="flex items-end justify-between text-[10px] sm:text-xs font-bold">
+        <span className="font-bold uppercase tracking-wider text-slate-500">
+          Progreso
         </span>
-        <span className="flex items-center gap-1 text-[#007a3f]">
-          <CheckCircle2 size={13} />
+        <span className="flex items-center gap-1 text-[#007A3F]">
+          <CheckCircle2 size={14} className="sm:w-[16px] sm:h-[16px]" />
           {completados}/{total} ({progreso}%)
         </span>
       </div>
 
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="h-2.5 sm:h-2 w-full overflow-hidden rounded-full bg-slate-200">
         <div
-          className="h-full rounded-full bg-green-500 transition-all duration-500"
+          className="h-full rounded-full bg-[#007A3F] transition-all duration-700 ease-out"
           style={{ width: `${progreso}%` }}
         />
       </div>
