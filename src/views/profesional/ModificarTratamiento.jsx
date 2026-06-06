@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, ClipboardList, Search } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { AlertTriangle, ArrowLeft, CheckCircle2, ClipboardList, Search } from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
 const getValue = (source, ...keys) => {
@@ -9,7 +9,6 @@ const getValue = (source, ...keys) => {
       return source[key];
     }
   }
-
   return undefined;
 };
 
@@ -18,7 +17,6 @@ const getPacienteNombre = (paciente) => {
   const nombre = `${getValue(paciente, "nombre", "Nombre") ?? ""} ${
     getValue(paciente, "apellido", "Apellido") ?? ""
   }`.trim();
-
   return nombreCompleto || nombre || "Paciente";
 };
 
@@ -29,8 +27,7 @@ const getPlantillaTitulo = (plantilla) =>
   getValue(plantilla, "titulo", "Titulo") ?? "Plantilla sin título";
 
 const getPlantillaDescripcion = (plantilla) =>
-  getValue(plantilla, "descripcion", "Descripcion") ??
-  "Sin descripción asignada.";
+  getValue(plantilla, "descripcion", "Descripcion") ?? "Sin descripción asignada.";
 
 const getEtapas = (plantilla) => getValue(plantilla, "etapas", "Etapas") ?? [];
 
@@ -46,21 +43,38 @@ const getEjercicios = (plantilla) =>
 
 const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
 
+const getTratamientoId = (tratamiento) =>
+  getValue(tratamiento, "idTratamiento", "IdTratamiento");
+
+const getTratamientoTitulo = (tratamiento) =>
+  getValue(tratamiento, "titulo", "Titulo") ?? "Tratamiento sin titulo";
+
+const getTratamientoEstado = (tratamiento) =>
+  getValue(tratamiento, "estado", "Estado") ?? "";
+
+const isTratamientoActivo = (tratamiento) =>
+  !["cancelado", "finalizado"].includes(
+    getTratamientoEstado(tratamiento).toLowerCase()
+  );
+
 const contieneTexto = (value, search) =>
   String(value ?? "")
     .toLowerCase()
     .includes(search.trim().toLowerCase());
 
-export default function AsignarTratamiento() {
+export default function ModificarTratamiento() {
   const { idPaciente } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [paciente, setPaciente] = useState(null);
   const [plantillas, setPlantillas] = useState([]);
+  const [tratamientos, setTratamientos] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [error, setError] = useState("");
+  const idTratamientoOrigen = location.state?.idTratamiento;
 
   useEffect(() => {
     loadData();
@@ -68,20 +82,23 @@ export default function AsignarTratamiento() {
 
   const loadData = async () => {
     setLoading(true);
-
     try {
-      const [pacienteResponse, plantillasResponse] = await Promise.all([
+      const [pacienteResponse, plantillasResponse, tratamientosResponse] = await Promise.all([
         httpClient.get(`/api/Profesional/pacientes/${idPaciente}`),
         httpClient.get("/api/profesional/tratamientos-plantilla"),
+        httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
       ]);
 
       const plantillasData = plantillasResponse?.data ?? plantillasResponse ?? [];
+      const tratamientosData =
+        tratamientosResponse?.data ?? tratamientosResponse ?? [];
       setPaciente(pacienteResponse?.data ?? pacienteResponse ?? null);
       setPlantillas(Array.isArray(plantillasData) ? plantillasData : []);
+      setTratamientos(Array.isArray(tratamientosData) ? tratamientosData : []);
       setError("");
     } catch (err) {
-      console.error("Error al cargar asignación de tratamiento:", err);
-      setError(err?.message || "No se pudo cargar la asignación.");
+      console.error("Error al cargar modificación de tratamiento:", err);
+      setError(err?.message || "No se pudo cargar la modificación.");
     } finally {
       setLoading(false);
     }
@@ -99,20 +116,39 @@ export default function AsignarTratamiento() {
     (plantilla) => String(getPlantillaId(plantilla)) === String(selectedId)
   );
 
-  const asignarTratamiento = async () => {
-    if (!selectedId) return;
+  const tratamientosActivos = useMemo(
+    () => tratamientos.filter(isTratamientoActivo),
+    [tratamientos]
+  );
 
+  const tratamientoOrigen = useMemo(() => {
+    if (idTratamientoOrigen) {
+      return tratamientos.find(
+        (tratamiento) =>
+          String(getTratamientoId(tratamiento)) === String(idTratamientoOrigen)
+      );
+    }
+
+    return tratamientosActivos.length === 1 ? tratamientosActivos[0] : null;
+  }, [idTratamientoOrigen, tratamientos, tratamientosActivos]);
+
+  const modificarTratamiento = async () => {
+    if (!selectedId || !tratamientoOrigen) return;
     setAssigning(true);
-
     try {
+      await httpClient.put(
+        `/api/profesional/tratamientos/${getTratamientoId(tratamientoOrigen)}`,
+        { estado: "Cancelado" }
+      );
+
       await httpClient.post(
         `/api/profesional/tratamientos-plantilla/${selectedId}/asignar`,
         { idPaciente: Number(idPaciente) }
       );
-      navigate("/profesional/home");
+      navigate(`/profesional/pacientes/${idPaciente}/tratamientos`);
     } catch (err) {
-      console.error("Error al asignar tratamiento:", err);
-      setError(err?.message || "No se pudo asignar el tratamiento.");
+      console.error("Error al modificar tratamiento:", err);
+      setError(err?.message || "No se pudo modificar el tratamiento.");
     } finally {
       setAssigning(false);
     }
@@ -128,7 +164,7 @@ export default function AsignarTratamiento() {
     );
   }
 
-return (
+  return (
     <section className={`space-y-5 animate-fade-in ${selectedTemplate ? "pb-24 xl:pb-0" : ""}`}>
       <button
         type="button"
@@ -141,15 +177,38 @@ return (
 
       <header className="rounded-3xl bg-white p-5 shadow-sm">
         <p className="text-sm font-semibold text-emerald-700">
-          Asignar tratamiento
+          Modificar tratamiento
         </p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">
           {getPacienteNombre(paciente)}
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Elegí una plantilla para crear el tratamiento del paciente.
+          Elegí una nueva plantilla para reemplazar el tratamiento activo del paciente.
         </p>
       </header>
+
+      <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 text-amber-900 flex gap-3">
+        <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18} />
+        <p className="text-xs font-medium text-amber-700/90 leading-relaxed">
+          Al confirmar, el tratamiento activo actual será reemplazado por el nuevo. El paciente verá el cambio reflejado inmediatamente en su app.
+        </p>
+      </div>
+
+      <section className="rounded-3xl bg-white p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Tratamiento a reemplazar
+        </p>
+        <h2 className="mt-2 text-lg font-bold text-slate-900">
+          {tratamientoOrigen
+            ? getTratamientoTitulo(tratamientoOrigen)
+            : "No hay un tratamiento seleccionado"}
+        </h2>
+        {!tratamientoOrigen && (
+          <p className="mt-2 text-sm leading-6 text-red-600">
+            Volve al listado de tratamientos y elegi cual queres modificar.
+          </p>
+        )}
+      </section>
 
       {error && <ErrorState message={error} onRetry={loadData} />}
 
@@ -173,9 +232,7 @@ return (
               <PlantillaCard
                 key={getPlantillaId(plantilla)}
                 plantilla={plantilla}
-                selected={
-                  String(getPlantillaId(plantilla)) === String(selectedId)
-                }
+                selected={String(getPlantillaId(plantilla)) === String(selectedId)}
                 onSelect={() => setSelectedId(String(getPlantillaId(plantilla)))}
               />
             ))
@@ -188,7 +245,7 @@ return (
 
         <aside className="hidden xl:block h-fit rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Selección
+            Nueva plantilla
           </p>
           <h2 className="mt-2 text-lg font-bold text-slate-900">
             {selectedTemplate
@@ -203,35 +260,36 @@ return (
 
           <button
             type="button"
-            onClick={asignarTratamiento}
-            disabled={!selectedId || assigning}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={modificarTratamiento}
+            disabled={!selectedId || !tratamientoOrigen || assigning}
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CheckCircle2 size={18} />
-            {assigning ? "Asignando..." : "Confirmar asignación"}
+            {assigning ? "Modificando..." : "Confirmar modificación"}
           </button>
         </aside>
       </div>
 
-      {selectedTemplate && (
+      {/* Bottom bar mobile */}
+        {selectedTemplate && (
         <div className="fixed bottom-25 left-0 right-0 z-50 px-4 xl:hidden">
-          <div className="bg-emerald-600 rounded-2xl shadow-xl p-4 flex items-center justify-between gap-3">
+            <div className="bg-emerald-600 rounded-2xl shadow-xl p-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Plantilla seleccionada</p>
-              <p className="text-sm font-bold text-white truncate">{getPlantillaTitulo(selectedTemplate)}</p>
+                <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Nueva plantilla</p>
+                <p className="text-sm font-bold text-white truncate">{getPlantillaTitulo(selectedTemplate)}</p>
             </div>
             <button
-              type="button"
-              onClick={asignarTratamiento}
-              disabled={!selectedId || assigning}
-              className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition active:scale-[0.98] disabled:opacity-50"
+                type="button"
+                onClick={modificarTratamiento}
+                disabled={!selectedId || !tratamientoOrigen || assigning}
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition active:scale-[0.98] disabled:opacity-50"
             >
-              <CheckCircle2 size={16} />
-              {assigning ? "Asignando..." : "Confirmar"}
+                <CheckCircle2 size={16} />
+                {assigning ? "Modificando..." : "Confirmar"}
             </button>
-          </div>
+            </div>
         </div>
-      )}
+        )}
     </section>
   );
 }

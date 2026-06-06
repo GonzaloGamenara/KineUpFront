@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 import { useRef, useState } from "react";
-import logo from "../../../public/logo_principal.svg";
+import logo from "../../assets/logo_principal.svg";
 import BottomNavigation from "./BottomNavigation.jsx";
 import Sidebar from "./Sidebar.jsx";
 

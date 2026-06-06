@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search, UserRoundPlus } from "lucide-react";
+import { ArrowRight, CheckCircle2, Search, UserRoundPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
@@ -34,6 +34,9 @@ const getTratamientoEstado = (tratamiento) =>
 const getTratamientoAvance = (tratamiento) =>
   Number(getValue(tratamiento, "avance", "Avance") ?? 0);
 
+const getPacienteTratamientos = (paciente) =>
+  getValue(paciente, "tratamientos", "Tratamientos") ?? [];
+
 const tieneTratamientoActivo = (tratamiento) =>
   !["cancelado", "finalizado"].includes(
     getTratamientoEstado(tratamiento).toLowerCase()
@@ -56,6 +59,7 @@ export default function HomeProfesional() {
   const [loading, setLoading] = useState(false);
   const [pacientes, setPacientes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -66,32 +70,10 @@ export default function HomeProfesional() {
     setLoading(true);
 
     try {
-      const pacientesResponse = await httpClient.get("/api/Profesional/pacientes");
-      const pacientesBase = pacientesResponse?.data ?? pacientesResponse ?? [];
+      const response = await httpClient.get("/api/profesional/home");
+      const data = response?.data ?? response ?? [];
 
-      const pacientesConTratamientos = await Promise.all(
-        pacientesBase.map(async (paciente) => {
-          const idPaciente = getPacienteId(paciente);
-
-          try {
-            const tratamientosResponse = await httpClient.get(
-              `/api/profesional/pacientes/${idPaciente}/tratamientos`
-            );
-            const tratamientos =
-              tratamientosResponse?.data ?? tratamientosResponse ?? [];
-
-            return {
-              ...paciente,
-              tratamientos: Array.isArray(tratamientos) ? tratamientos : [],
-            };
-          } catch (err) {
-            console.error("Error al traer tratamientos del paciente:", err);
-            return { ...paciente, tratamientos: [], tratamientosError: true };
-          }
-        })
-      );
-
-      setPacientes(pacientesConTratamientos);
+      setPacientes(Array.isArray(data) ? data : []);
       setError("");
     } catch (err) {
       console.error("Error al cargar el inicio profesional:", err);
@@ -103,18 +85,28 @@ export default function HomeProfesional() {
   };
 
   const pacientesFiltrados = useMemo(() => {
-    return pacientes.filter((paciente) =>
-      getPacienteNombre(paciente).toLowerCase().includes(busqueda.toLowerCase())
-    );
-  }, [busqueda, pacientes]);
+    return pacientes.filter((paciente) => {
+      const cumpleNombre = getPacienteNombre(paciente)
+        .toLowerCase()
+        .includes(busqueda.toLowerCase());
+
+      const tieneActivo =
+        getPacienteTratamientos(paciente).some(tieneTratamientoActivo);
+      let cumpleEstado = true;
+      if (filtroEstado === "con") cumpleEstado = tieneActivo;
+      if (filtroEstado === "sin") cumpleEstado = !tieneActivo;
+
+      return cumpleNombre && cumpleEstado;
+    });
+  }, [busqueda, filtroEstado, pacientes]);
 
   const metricas = useMemo(() => {
     const conTratamiento = pacientes.filter((paciente) =>
-      paciente.tratamientos.some(tieneTratamientoActivo)
+      getPacienteTratamientos(paciente).some(tieneTratamientoActivo)
     );
 
     const alDia = conTratamiento.filter(
-      (paciente) => calcularProgreso(paciente.tratamientos) >= 100
+      (paciente) => calcularProgreso(getPacienteTratamientos(paciente)) >= 100
     );
 
     return {
@@ -139,7 +131,6 @@ export default function HomeProfesional() {
     <section className="space-y-5 animate-fade-in">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-emerald-700">Profesional</p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">
             Hola de nuevo
           </h1>
@@ -151,18 +142,56 @@ export default function HomeProfesional() {
 
       {error && <ErrorState message={error} onRetry={loadDashboard} />}
 
-      <div className="relative">
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-        />
-        <input
-          type="text"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="Buscar por nombre..."
-          className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600"
-        />
+      <div className="space-y-3">
+        <div className="relative">
+          <Search
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre..."
+            className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("todos")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "todos"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Todos ({metricas.totalPacientes})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("con")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "con"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            En tratamiento ({metricas.conTratamiento})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado("sin")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
+              filtroEstado === "sin"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Pendientes ({metricas.sinTratamiento})
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -171,6 +200,11 @@ export default function HomeProfesional() {
             <PacienteCard
               key={getPacienteId(paciente)}
               paciente={paciente}
+              onOpenTreatment={() =>
+                navigate(
+                  `/profesional/pacientes/${getPacienteId(paciente)}/tratamientos`
+                )
+              }
               onAssign={() =>
                 navigate(
                   `/profesional/pacientes/${getPacienteId(
@@ -182,7 +216,7 @@ export default function HomeProfesional() {
           ))
         ) : (
           <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-medium text-slate-400 shadow-sm">
-            No se encontraron pacientes activos.
+            No se encontraron pacientes activos con los filtros aplicados.
           </div>
         )}
       </div>
@@ -209,18 +243,37 @@ function ErrorState({ message, onRetry }) {
 
 function PacienteCard({
   paciente,
+  onOpenTreatment,
   onAssign,
 }) {
-  const tratamientosActivos = paciente.tratamientos.filter(tieneTratamientoActivo);
+  const tratamientos = getPacienteTratamientos(paciente);
+  const tratamientosActivos = tratamientos.filter(tieneTratamientoActivo);
   const tratamientoPrincipal = tratamientosActivos[0];
-  const progreso = calcularProgreso(paciente.tratamientos);
+  const progreso = calcularProgreso(tratamientos);
   const sinTratamiento = tratamientosActivos.length === 0;
-  const tratamientosError = paciente.tratamientosError;
   const idPaciente = getPacienteId(paciente);
   const nombre = getPacienteNombre(paciente);
+  const subtitulo =
+    tratamientosActivos.length === 0
+      ? "Sin tratamiento asignado"
+      : tratamientosActivos.length === 1
+        ? getTratamientoTitulo(tratamientoPrincipal)
+        : "";
 
   return (
-    <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:bg-slate-50/60">
+    <article
+      onClick={onOpenTreatment}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenTreatment();
+        }
+      }}
+      className="cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-emerald-200 hover:bg-slate-50/60 active:scale-[0.99]"
+      aria-label={`Ver tratamientos de ${nombre}`}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-base font-bold text-[#007a3f]">
@@ -231,28 +284,25 @@ function PacienteCard({
             <h3 className="truncate text-sm font-bold leading-tight text-slate-800">
               {nombre}
             </h3>
-            <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
-              {sinTratamiento
-                ? tratamientosError
-                  ? "No se pudieron consultar sus tratamientos"
-                  : "Sin tratamiento asignado"
-                : getTratamientoTitulo(tratamientoPrincipal)}
-            </p>
+            {subtitulo && (
+              <p className="mt-0.5 truncate text-xs font-medium text-slate-400">
+                {subtitulo}
+              </p>
+            )}
           </div>
         </div>
 
-        {tratamientosError ? (
-          <div className="rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 lg:max-w-xs">
-            Reintentá actualizar antes de asignar.
-          </div>
-        ) : sinTratamiento ? (
+        {sinTratamiento ? (
           <AssignButton idPaciente={idPaciente} onAssign={onAssign} />
         ) : (
-          <ProgressSummary
-            progreso={progreso}
-            completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
-            total={tratamientosActivos.length}
-          />
+          <div className="flex w-full items-center gap-3 lg:w-auto">
+            <ProgressSummary
+              progreso={progreso}
+              completados={tratamientosActivos.filter((t) => getTratamientoAvance(t) >= 100).length}
+              total={tratamientosActivos.length}
+            />
+            <ArrowRight className="hidden shrink-0 text-slate-300 lg:block" size={20} />
+          </div>
         )}
       </div>
     </article>
@@ -263,7 +313,11 @@ function AssignButton({ idPaciente, onAssign }) {
   return (
     <button
       type="button"
-      onClick={onAssign}
+      onClick={(event) => {
+        event.stopPropagation();
+        onAssign();
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
       className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] sm:w-auto"
       aria-label={`Asignar tratamiento al paciente ${idPaciente}`}
     >
