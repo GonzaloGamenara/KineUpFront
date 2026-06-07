@@ -21,6 +21,8 @@ import ModificarTratamiento from "../views/profesional/ModificarTratamiento.jsx"
 import DetalleTratamientos from "../views/profesional/DetalleTratamientos.jsx";
 import CrearPlantillaTratamiento from "../views/profesional/CrearPlantillaTratamiento.jsx";
 import CrearEtapaPlantilla from "../views/profesional/CrearEtapaPlantilla.jsx";
+import CrearRutinaPlantilla from "../views/profesional/CrearRutinaPlantilla.jsx";
+import SeleccionarEjerciciosPlantilla from "../views/profesional/SeleccionarEjerciciosPlantilla.jsx";
 
 export default function AppRoutes() {
   return (
@@ -53,7 +55,9 @@ export default function AppRoutes() {
           <Route path="tratamientos" element={<Tratamientos />} />
           <Route path="tratamientos/nueva" element={<CrearPlantillaTratamiento />} />
           <Route path="tratamientos/nueva/etapa" element={<CrearEtapaPlantilla />} />
-          <Route path="tratamientos/nueva/rutina" element={<EnConstruccion />} />
+          <Route path="tratamientos/nueva/rutina" element={<CrearRutinaPlantilla />} />
+          <Route path="tratamientos/nueva/ejercicios" element={<SeleccionarEjerciciosPlantilla />} />
+          <Route path="tratamientos/nueva/confirmar" element={<EnConstruccion />} />
           <Route path="pacientes/:idPaciente" element={<DetallePaciente />} />
           <Route
             path="pacientes/:idPaciente/tratamientos"
