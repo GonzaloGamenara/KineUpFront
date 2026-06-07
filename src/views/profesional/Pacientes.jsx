@@ -42,7 +42,7 @@ export default function Pacientes() {
     setLoading(true);
 
     try {
-      const response = await httpClient.get("/api/Profesional/pacientes");
+      const response = await httpClient.get("/api/profesional/pacientes");
       setPacientes(response.data || response);
     } catch (err) {
       console.error(err);

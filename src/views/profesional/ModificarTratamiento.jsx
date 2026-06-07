@@ -84,7 +84,7 @@ export default function ModificarTratamiento() {
     setLoading(true);
     try {
       const [pacienteResponse, plantillasResponse, tratamientosResponse] = await Promise.all([
-        httpClient.get(`/api/Profesional/pacientes/${idPaciente}`),
+        httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
         httpClient.get("/api/profesional/tratamientos-plantilla"),
         httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
       ]);

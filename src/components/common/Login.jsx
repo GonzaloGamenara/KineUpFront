@@ -179,7 +179,7 @@ function Login() {
         <button
           className="text-sm text-gray-500 hover:text-green-800 transition-colors mt-2"
           type="button"
-          onClick={() => navigate("/registrar-paciente")}
+          onClick={() => navigate("/registro")}
         >
           ¿No tenés cuenta?{" "}
           <span className="font-bold underline">Registrate acá</span>

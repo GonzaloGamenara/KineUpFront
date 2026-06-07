@@ -16,7 +16,7 @@ export default function DetallePaciente() {
   useEffect(() => {
     const cargarPaciente = async () => {
       try {
-        const data = await httpClient.get(`/api/Profesional/pacientes/${idPaciente}`);
+        const data = await httpClient.get(`/api/profesional/pacientes/${idPaciente}`);
         setPaciente(data);
       } catch (err) {
         console.error(err);
@@ -33,7 +33,7 @@ export default function DetallePaciente() {
     setDesvinculando(true);
 
     try {
-      await httpClient.patch(`/api/Profesional/pacientes/${idPaciente}/desvincular`);
+      await httpClient.patch(`/api/profesional/pacientes/${idPaciente}/desvincular`);
       navigate("/profesional/pacientes", { replace: true });
     } catch (err) {
       console.error("Error al desvincular paciente:", err);

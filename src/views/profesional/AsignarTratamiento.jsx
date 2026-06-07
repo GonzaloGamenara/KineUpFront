@@ -71,7 +71,7 @@ export default function AsignarTratamiento() {
 
     try {
       const [pacienteResponse, plantillasResponse] = await Promise.all([
-        httpClient.get(`/api/Profesional/pacientes/${idPaciente}`),
+        httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
         httpClient.get("/api/profesional/tratamientos-plantilla"),
       ]);
 

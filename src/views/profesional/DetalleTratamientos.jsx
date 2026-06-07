@@ -56,7 +56,7 @@ export default function DetalleTratamientos() {
 
     try {
       const [pacienteResponse, tratamientosResponse] = await Promise.all([
-        httpClient.get(`/api/Profesional/pacientes/${idPaciente}`),
+        httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
         httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
       ]);
 
