@@ -173,7 +173,7 @@ export default function SeleccionarEjerciciosPlantilla() {
   }
 
   return (
-    <section className="space-y-5 pb-28 animate-fade-in xl:pb-0">
+    <section className="space-y-5 pb-28 animate-fade-in lg:pb-0">
       <button
         type="button"
         onClick={volver}
@@ -206,7 +206,7 @@ export default function SeleccionarEjerciciosPlantilla() {
 
       {error && <ErrorState message={error} onRetry={cargarEjercicios} />}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <div className="relative">
             <Search
@@ -253,7 +253,7 @@ export default function SeleccionarEjerciciosPlantilla() {
           </div>
         </div>
 
-        <aside className="hidden h-fit rounded-3xl bg-white p-5 shadow-sm xl:block">
+        <aside className="sticky top-24 hidden h-fit max-h-[calc(100dvh-8rem)] overflow-y-auto rounded-3xl bg-white p-5 shadow-sm lg:block">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Seleccionados
           </p>
@@ -267,6 +267,25 @@ export default function SeleccionarEjerciciosPlantilla() {
               Selecciona al menos un ejercicio.
             </p>
           )}
+
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              onClick={continuar}
+              disabled={!canContinue}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Continuar
+              <ArrowRight size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={cancelar}
+              className="mt-2 w-full rounded-2xl px-4 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+          </div>
 
           <div className="mt-4 space-y-3">
             {seleccionados.length > 0 ? (
@@ -293,8 +312,8 @@ export default function SeleccionarEjerciciosPlantilla() {
         </aside>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-100 bg-white p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] xl:static xl:flex xl:flex-row xl:justify-end xl:gap-2 xl:rounded-3xl xl:border-0 xl:shadow-sm">
-        <div className="mb-3 flex items-center justify-between xl:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-100 bg-white p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] md:left-64 lg:hidden">
+        <div className="mb-3 flex items-center justify-between lg:hidden">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Seleccionados
           </p>
@@ -304,27 +323,27 @@ export default function SeleccionarEjerciciosPlantilla() {
           </p>
         </div>
         {touched && seleccionados.length < 1 && (
-          <p className="mb-2 text-xs font-semibold text-red-600 xl:hidden">
+          <p className="mb-2 text-xs font-semibold text-red-600 lg:hidden">
             Selecciona al menos un ejercicio.
           </p>
         )}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end xl:contents">
-        <button
-          type="button"
-          onClick={cancelar}
-          className="rounded-2xl px-4 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-50"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          onClick={continuar}
-          disabled={!canContinue}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Continuar
-          <ArrowRight size={18} />
-        </button>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={cancelar}
+            className="rounded-2xl px-4 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={continuar}
+            disabled={!canContinue}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Continuar
+            <ArrowRight size={18} />
+          </button>
         </div>
       </div>
     </section>
@@ -367,7 +386,7 @@ function ExerciseCard({
       </button>
 
       {selected && selectedExercise && (
-        <div className="mt-4 border-t border-slate-100 pt-4 xl:hidden">
+        <div className="mt-4 border-t border-slate-100 pt-4 lg:hidden">
           <SelectedExercise
             ejercicio={selectedExercise}
             onChange={onChange}

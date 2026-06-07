@@ -214,7 +214,7 @@ return (
       </div>
 
       {selectedTemplate && (
-        <div className="fixed bottom-25 left-0 right-0 z-50 px-4 xl:hidden">
+        <div className="fixed bottom-25 left-0 right-0 z-50 px-4 md:left-64 xl:hidden">
           <div className="bg-emerald-600 rounded-2xl shadow-xl p-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Plantilla seleccionada</p>

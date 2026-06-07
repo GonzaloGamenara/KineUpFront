@@ -107,21 +107,6 @@ export default function Tratamientos() {
     );
   }, [busqueda, tratamientosActivos]);
 
-  const metricas = useMemo(() => {
-    return tratamientosActivos.reduce(
-      (totales, tratamiento) => ({
-        plantillas: totales.plantillas + 1,
-        etapas: totales.etapas + getEtapas(tratamiento).filter(isActivo).length,
-        rutinas:
-          totales.rutinas + getRutinas(tratamiento).filter(isActivo).length,
-        ejercicios:
-          totales.ejercicios +
-          getEjercicios(tratamiento).filter(isActivo).length,
-      }),
-      { plantillas: 0, etapas: 0, rutinas: 0, ejercicios: 0 }
-    );
-  }, [tratamientosActivos]);
-
   const desactivarPlantilla = async () => {
     if (!confirmTarget) return;
 
@@ -197,13 +182,6 @@ export default function Tratamientos() {
         </div>
       </header>
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <MetricCard label="Plantillas" value={metricas.plantillas} />
-        <MetricCard label="Etapas" value={metricas.etapas} />
-        <MetricCard label="Rutinas" value={metricas.rutinas} />
-        <MetricCard label="Ejercicios" value={metricas.ejercicios} />
-      </div>
-
       {error && <ErrorState message={error} onRetry={loadTratamientos} />}
 
       <div className="relative">
@@ -268,17 +246,6 @@ export default function Tratamientos() {
         />
       )}
     </section>
-  );
-}
-
-function MetricCard({ label, value }) {
-  return (
-    <div className="rounded-3xl bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-bold text-slate-900">{value || "-"}</p>
-    </div>
   );
 }
 

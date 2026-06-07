@@ -23,6 +23,7 @@ import CrearPlantillaTratamiento from "../views/profesional/CrearPlantillaTratam
 import CrearEtapaPlantilla from "../views/profesional/CrearEtapaPlantilla.jsx";
 import CrearRutinaPlantilla from "../views/profesional/CrearRutinaPlantilla.jsx";
 import SeleccionarEjerciciosPlantilla from "../views/profesional/SeleccionarEjerciciosPlantilla.jsx";
+import ConfirmarPlantillaTratamiento from "../views/profesional/ConfirmarPlantillaTratamiento.jsx";
 
 export default function AppRoutes() {
   return (
@@ -57,7 +58,7 @@ export default function AppRoutes() {
           <Route path="tratamientos/nueva/etapa" element={<CrearEtapaPlantilla />} />
           <Route path="tratamientos/nueva/rutina" element={<CrearRutinaPlantilla />} />
           <Route path="tratamientos/nueva/ejercicios" element={<SeleccionarEjerciciosPlantilla />} />
-          <Route path="tratamientos/nueva/confirmar" element={<EnConstruccion />} />
+          <Route path="tratamientos/nueva/confirmar" element={<ConfirmarPlantillaTratamiento />} />
           <Route path="pacientes/:idPaciente" element={<DetallePaciente />} />
           <Route
             path="pacientes/:idPaciente/tratamientos"
