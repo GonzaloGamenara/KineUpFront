@@ -32,7 +32,8 @@ export default function AppRoutes() {
 
       <Route path="/login" element={<Login />} />
 
-      <Route path="/registrar-paciente" element={<Register />} />
+      <Route path="/registro" element={<Register />} />
+      <Route path="/registrar-paciente" element={<Navigate to="/registro" replace />} />
 
       <Route element={<RequireRole roles={["Paciente", "Admin"]} />}>
         <Route path="/paciente" element={<AppLayout />}>

@@ -39,7 +39,12 @@ async function request(endpoint, options = {}) {
     throw {
       status: response.status,
       data,
-      message: data?.message ?? "Error en la petición",
+      message:
+        data?.message ??
+        data?.Message ??
+        data?.detail ??
+        data?.title ??
+        "Error en la peticion",
     };
   }
 
