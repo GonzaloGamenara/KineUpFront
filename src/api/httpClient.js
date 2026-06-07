@@ -1,13 +1,38 @@
+import { ACTIVE_ORGANIZATION_STORAGE_KEY } from "../auth/organizationStorage.js";
+
 const URL_BACK = import.meta.env.VITE_URL_BACK;
 const PUERTO_BACK = import.meta.env.VITE_PUERTO_BACK;
+
+const requiresOrganizationHeader = (endpoint) => {
+  const path = endpoint.split("?")[0].toLowerCase();
+
+  return [
+    /^\/api\/profesional\/pacientes(?:\/[^/]+)?$/,
+    /^\/api\/profesional\/pacientes\/[^/]+\/desvincular$/,
+    /^\/api\/profesional\/home$/,
+    /^\/api\/profesional\/pacientes\/[^/]+\/tratamientos$/,
+    /^\/api\/profesional\/tratamientos-plantilla\/[^/]+\/asignar$/,
+    /^\/api\/profesional\/tratamientos\/[^/]+\/cancelar$/,
+    /^\/api\/profesional\/tratamientos\/[^/]+\/reemplazar$/,
+    /^\/api\/vinculation\/generar-qr$/,
+  ].some((pattern) => pattern.test(path));
+};
 
 async function request(endpoint, options = {}) {
 
   const token = localStorage.getItem("token");
+  const activeOrganizationId = localStorage.getItem(
+    ACTIVE_ORGANIZATION_STORAGE_KEY
+  );
+  const shouldSendOrganization = requiresOrganizationHeader(endpoint);
 
   const headers = {
     ...(options.body && { "Content-Type": "application/json" }),
     ...(token && { Authorization: `Bearer ${token}` }),
+    ...(activeOrganizationId &&
+      shouldSendOrganization && {
+        "X-Organizacion-Id": activeOrganizationId,
+      }),
     ...options.headers,
   };
 

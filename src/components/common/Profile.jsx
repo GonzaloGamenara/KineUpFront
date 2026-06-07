@@ -6,7 +6,6 @@ const Profile = () => {
   const { user } = useAuth();
 
   const handleLog = () => {
-    console.log(user);
     alert("Todavia no anda :)");
   };
 

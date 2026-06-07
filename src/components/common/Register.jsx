@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   AtSign,
-  Briefcase,
   Calendar,
   Eye,
   Loader2,
@@ -13,6 +12,7 @@ import {
 import logo from "../../assets/logo.png";
 import { httpClient } from "../../api/httpClient.js";
 import { useAuth } from "../../auth/AuthContext";
+import { getUserRoles } from "../../auth/organizationStorage.js";
 import GoogleLoginButton from "./GoogleLogin.jsx";
 
 const initialForm = {
@@ -22,19 +22,15 @@ const initialForm = {
   email: "",
   password: "",
   fechaNacimiento: "",
-  numeroMatricula: "",
 };
 
 export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [type, setType] = useState("Paciente");
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const isPatient = type === "Paciente";
 
   const canSubmit = useMemo(() => {
     const requiredBase = Boolean(
@@ -47,10 +43,8 @@ export default function Register() {
 
     if (!requiredBase) return false;
 
-    return isPatient
-      ? Boolean(form.fechaNacimiento)
-      : Boolean(form.numeroMatricula.trim());
-  }, [form, isPatient]);
+    return Boolean(form.fechaNacimiento);
+  }, [form]);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -74,21 +68,13 @@ export default function Register() {
       usuario: form.usuario.trim(),
       email: form.email.trim(),
       password: form.password,
-      fechaNacimiento: isPatient ? form.fechaNacimiento : null,
-      ...(isPatient
-        ? {}
-        : { numeroMatricula: form.numeroMatricula.trim() }),
+      fechaNacimiento: form.fechaNacimiento,
     };
 
     setLoading(true);
 
     try {
-      await httpClient.post(
-        isPatient
-          ? "/api/User/registrar/paciente"
-          : "/api/User/registrar/profesional",
-        payload
-      );
+      await httpClient.post("/api/User/registrar/paciente", payload);
 
       setSuccess("Cuenta creada correctamente. Ya podes iniciar sesion.");
       setForm(initialForm);
@@ -110,14 +96,19 @@ export default function Register() {
         Token: token,
       });
 
-      const roles = data?.userData?.roles ?? [];
-
-      if (!data?.token || !roles.length) {
+      if (!(data?.token ?? data?.Token)) {
         setError("No se pudo registrar con Google.");
         return;
       }
 
-      login(data);
+      const userData = await login(data);
+      const roles = getUserRoles(userData);
+
+      if (!roles.length) {
+        setError("No se pudo registrar con Google.");
+        return;
+      }
+
       navigate("/paciente/home", { replace: true });
     } catch (err) {
       console.error("Error al registrar con Google:", err);
@@ -136,32 +127,8 @@ export default function Register() {
           <h1 className="text-xl font-bold text-slate-900">Crear cuenta</h1>
 
           <p className="mt-1 text-xs text-slate-500">
-            Elegi como queres registrarte
+            Registro disponible para pacientes
           </p>
-        </div>
-
-        <div className="mb-4 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
-          <button
-            type="button"
-            onClick={() => setType("Paciente")}
-            className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
-              isPatient ? "bg-emerald-600 text-white shadow" : "text-slate-500"
-            }`}
-          >
-            <User size={16} />
-            Paciente
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setType("Profesional")}
-            className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
-              !isPatient ? "bg-emerald-600 text-white shadow" : "text-slate-500"
-            }`}
-          >
-            <Briefcase size={16} />
-            Profesional
-          </button>
         </div>
 
         {error && (
@@ -223,24 +190,14 @@ export default function Register() {
             required
           />
 
-          {isPatient ? (
-            <Input
-              label="Fecha de nacimiento"
-              icon={Calendar}
-              type="date"
-              value={form.fechaNacimiento}
-              onChange={(value) => updateField("fechaNacimiento", value)}
-              required
-            />
-          ) : (
-            <Input
-              label="Matricula"
-              placeholder="MP 123456"
-              value={form.numeroMatricula}
-              onChange={(value) => updateField("numeroMatricula", value)}
-              required
-            />
-          )}
+          <Input
+            label="Fecha de nacimiento"
+            icon={Calendar}
+            type="date"
+            value={form.fechaNacimiento}
+            onChange={(value) => updateField("fechaNacimiento", value)}
+            required
+          />
 
           <button
             type="submit"
@@ -252,19 +209,15 @@ export default function Register() {
           </button>
         </form>
 
-        {isPatient && (
-          <>
-            <div className="my-3 flex items-center gap-3 text-[11px] text-slate-400">
-              <div className="h-px flex-1 bg-slate-200" />
-              O BIEN
-              <div className="h-px flex-1 bg-slate-200" />
-            </div>
+        <div className="my-3 flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="h-px flex-1 bg-slate-200" />
+          O BIEN
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
 
-            <div className="flex justify-center">
-              <GoogleLoginButton onSuccess={handleGoogleRegister} />
-            </div>
-          </>
-        )}
+        <div className="flex justify-center">
+          <GoogleLoginButton onSuccess={handleGoogleRegister} />
+        </div>
 
         <p className="mt-3 text-center text-xs text-slate-500">
           Ya tenes cuenta?{" "}

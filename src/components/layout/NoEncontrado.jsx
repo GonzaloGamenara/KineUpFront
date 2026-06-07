@@ -1,12 +1,13 @@
 import { SearchX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { getUserRoles } from "../../auth/organizationStorage";
 
 export default function NotFound() {
     const { user } = useAuth();
 
     const homeUrl =
-        user?.roles?.includes("Profesional") //caso a mirar si tengo ambos roles.
+        getUserRoles(user).includes("Profesional") //caso a mirar si tengo ambos roles.
             ? "/profesional/home"
             : "/paciente/home";
 

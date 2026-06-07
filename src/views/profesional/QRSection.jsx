@@ -12,7 +12,7 @@ export default function QRSection() {
   const [loading, setLoading] = useState(true);
   const [tokenQr, setTokenQr] = useState("");
   const [error, setError] = useState("");
-  const { logout } = useAuth();
+  const { logout, activeOrganization } = useAuth();
   const navigate = useNavigate();
 
   const qrUrl = `${URL_FRONT}:${PUERTO_FRONT}/paciente/vincular/${tokenQr}`;
@@ -53,6 +53,11 @@ export default function QRSection() {
         <p className="text-slate-500 text-sm mt-1">
           El paciente puede escanear este codigo para vincularse a tu cuenta.
         </p>
+        {activeOrganization && (
+          <p className="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+            {activeOrganization.nombre}
+          </p>
+        )}
       </header>
 
       <div className="rounded-[2rem] bg-white p-6 shadow-sm">

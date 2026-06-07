@@ -1,8 +1,9 @@
 import { Navigate, Outlet, useLocation} from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { getUserRoles } from "./organizationStorage";
 
 export function RequireRole({ roles, children }) {
-  const { user, loadingAuth } = useAuth();
+  const { user, loadingAuth, needsOrganizationSelection } = useAuth();
   const location = useLocation();
 
   if (loadingAuth) return null;
@@ -17,10 +18,19 @@ export function RequireRole({ roles, children }) {
       return <Navigate to={loginUrl} replace />;
   }
 
-  const userRoles = user.roles ?? [];
+  const userRoles = getUserRoles(user);
   const hasRole = roles.some(role => userRoles.includes(role));
 
   if (!hasRole) return <Navigate to="/sin-acceso" replace />;
+
+  if (
+    userRoles.includes("Profesional") &&
+    roles.includes("Profesional") &&
+    needsOrganizationSelection &&
+    location.pathname !== "/profesional/organizacion"
+  ) {
+    return <Navigate to="/profesional/organizacion" replace />;
+  }
 
   return children ?? <Outlet />;
 }

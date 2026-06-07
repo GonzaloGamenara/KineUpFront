@@ -1,107 +1,128 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import { httpClient } from "../../api/httpClient.js";
 import AnimatedBackground from "../layout/AnimatedBackground.jsx";
 import { useAuth } from "../../auth/AuthContext";
-import { useSearchParams } from "react-router-dom";
 import GoogleLoginButton from "./GoogleLogin.jsx";
+import {
+  getProfessionalOrganizations,
+  getStoredProfessionalOrganization,
+  getUserRoles,
+} from "../../auth/organizationStorage.js";
+
+const needsProfessionalOrganizationSelection = (userData) =>
+  getProfessionalOrganizations(userData).length > 1 &&
+  !getStoredProfessionalOrganization(userData);
+
+const getDefaultRoute = (
+  roles,
+  userData,
+  needsOrganizationSelection = false
+) => {
+  if (roles.includes("Admin")) return "/admin/home";
+  if (roles.includes("Profesional")) {
+    return needsOrganizationSelection ||
+      needsProfessionalOrganizationSelection(userData)
+      ? "/profesional/organizacion"
+      : "/profesional/home";
+  }
+  if (roles.includes("Paciente")) return "/paciente/home";
+
+  return "/sin-acceso";
+};
 
 function Login() {
-  const { user, login, loadingAuth } = useAuth();
-
+  const { user, login, loadingAuth, needsOrganizationSelection } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [searchParams] = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl");
 
   useEffect(() => {
-    if (loadingAuth) return;
+    if (loadingAuth || !user) return;
 
-    if (user) {
-      if (returnUrl) navigate(returnUrl, { replace: true });
-      else if (user.roles.includes("Admin")) navigate("/admin/home", { replace: true });
-      else if (user.roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
-      else if (user.roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
+    const roles = getUserRoles(user);
+
+    if (returnUrl) {
+      navigate(returnUrl, { replace: true });
+      return;
     }
-  }, [user, loadingAuth, returnUrl, navigate]);
 
-  const handleLogin = async (e) => {
+    navigate(getDefaultRoute(roles, user, needsOrganizationSelection), {
+      replace: true,
+    });
+  }, [loadingAuth, navigate, needsOrganizationSelection, returnUrl, user]);
 
-    e.preventDefault();
-
+  const handleLogin = async (event) => {
+    event.preventDefault();
     setError("");
 
     try {
-
       const data = await httpClient.post("/api/Auth/login", {
         usuario,
         password,
       });
 
-      const roles = data?.userData?.roles ?? [];
-
-      if (!data?.token || !roles.length) {
-        setError("Credenciales inválidas.");
+      if (!(data?.token ?? data?.Token)) {
+        setError("Credenciales invalidas.");
         return;
       }
 
-      login(data);
+      const userData = await login(data);
+      const roles = getUserRoles(userData);
+
+      if (!roles.length) {
+        setError("Credenciales invalidas.");
+        return;
+      }
 
       if (returnUrl) {
         navigate(returnUrl, { replace: true });
         return;
       }
 
-      if (roles.includes("Admin")) navigate("/admin/home", { replace: true });
-      else if (roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
-      else if (roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
-      else navigate("/sin-acceso", { replace: true });
-
+      navigate(getDefaultRoute(roles, userData), { replace: true });
     } catch (err) {
-
       console.error(err);
-
-      setError("Sin conexión con el servidor.");
+      setError("Sin conexion con el servidor.");
     }
   };
 
   const handleGoogleLogin = async (Token) => {
     setError("");
 
-    console.log("Google Token:", Token);
-
     try {
       const data = await httpClient.post("/api/Auth/google/paciente", {
-        Token: Token,
+        Token,
       });
 
-      const roles = data?.userData?.roles ?? [];
-
-      if (!data?.token || !roles.length) {
-        setError("No se pudo iniciar sesión con Google.");
+      if (!(data?.token ?? data?.Token)) {
+        setError("No se pudo iniciar sesion con Google.");
         return;
       }
 
-      login(data);
+      const userData = await login(data);
+      const roles = getUserRoles(userData);
+
+      if (!roles.length) {
+        setError("No se pudo iniciar sesion con Google.");
+        return;
+      }
 
       if (returnUrl) navigate(returnUrl, { replace: true });
-      else if (roles.includes("Admin")) navigate("/admin/home", { replace: true });
-      else if (roles.includes("Profesional")) navigate("/profesional/home", { replace: true });
-      else if (roles.includes("Paciente")) navigate("/paciente/home", { replace: true });
-      else navigate("/sin-acceso", { replace: true });
-
+      else navigate(getDefaultRoute(roles, userData), { replace: true });
     } catch (err) {
       console.error(err);
-      setError("No se pudo iniciar sesión con Google.");
+      setError("No se pudo iniciar sesion con Google.");
     }
   };
 
   return (
-    <div className="relative h-screen flex items-center justify-center font-poppins overflow-hidden">
+    <div className="relative flex h-screen items-center justify-center overflow-hidden font-poppins">
       <AnimatedBackground
         bgColor="#f0fdf4"
         color1="#bbf7d0"
@@ -111,82 +132,83 @@ function Login() {
         speed={3}
       />
 
-      <div className="bg-white/70 backdrop-blur-sm px-16 py-10 rounded-3xl shadow-lg w-96 flex flex-col items-center gap-4 z-10">
+      <div className="z-10 flex w-96 flex-col items-center gap-4 rounded-3xl bg-white/70 px-16 py-10 shadow-lg backdrop-blur-sm">
         <img
           src={logo}
           alt="KineUp"
-          className="h-16 hover:scale-105 transition-transform duration-300"
+          className="h-16 transition-transform duration-300 hover:scale-105"
         />
 
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-green-900 leading-tight">
-            ¡Qué bueno verte!
+          <h1 className="text-3xl font-bold leading-tight text-green-900">
+            Que bueno verte!
           </h1>
         </div>
 
         {error && (
-          <p className="text-red-500 text-xs italic bg-red-50 p-2 rounded w-full border border-red-100">
+          <p className="w-full rounded border border-red-100 bg-red-50 p-2 text-xs italic text-red-500">
             {error}
           </p>
         )}
 
-        <form className="w-full flex flex-col gap-4" onSubmit={handleLogin}>
+        <form className="flex w-full flex-col gap-4" onSubmit={handleLogin}>
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-1 ml-1">
+            <label className="mb-1 ml-1 block text-sm font-bold text-gray-700">
               Usuario
             </label>
             <input
-              className="shadow-sm border border-gray-200 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#007a3f] focus:ring-1 focus:ring-[#007a3f] transition-all"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-700 shadow-sm transition-all focus:border-[#007a3f] focus:outline-none focus:ring-1 focus:ring-[#007a3f]"
               type="text"
-              placeholder="Ingresá tu usuario"
+              placeholder="Ingresa tu usuario"
               value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
+              onChange={(event) => setUsuario(event.target.value)}
               required
             />
           </div>
+
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-1 ml-1">
-              Contraseña
+            <label className="mb-1 ml-1 block text-sm font-bold text-gray-700">
+              Contrasena
             </label>
             <input
-              className="shadow-sm border border-gray-200 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#007a3f] focus:ring-1 focus:ring-[#007a3f] transition-all"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-700 shadow-sm transition-all focus:border-[#007a3f] focus:outline-none focus:ring-1 focus:ring-[#007a3f]"
               type="password"
               placeholder="**********"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </div>
 
           <button
-            className="bg-[#007a3f] hover:bg-[#005a2f] active:scale-95 text-white font-bold py-3 rounded-lg transition-all mt-2 shadow-md hover:shadow-lg flex justify-center items-center cursor-pointer "
+            className="mt-2 flex cursor-pointer items-center justify-center rounded-lg bg-[#007a3f] py-3 font-bold text-white shadow-md transition-all hover:bg-[#005a2f] hover:shadow-lg active:scale-95"
             type="submit"
           >
-            Iniciar Sesión
+            Iniciar sesion
           </button>
         </form>
 
-        <div className="flex items-center w-full mt-2">
-          <div className="grow border-t border-gray-300"></div>
-          <span className="mx-4 text-gray-400 text-xs uppercase tracking-widest">
+        <div className="mt-2 flex w-full items-center">
+          <div className="grow border-t border-gray-300" />
+          <span className="mx-4 text-xs uppercase tracking-widest text-gray-400">
             o bien
           </span>
-          <div className="grow border-t border-gray-300"></div>
+          <div className="grow border-t border-gray-300" />
         </div>
 
         <GoogleLoginButton onSuccess={handleGoogleLogin} />
 
         <button
-          className="text-sm text-gray-500 hover:text-green-800 transition-colors mt-2"
+          className="mt-2 text-sm text-gray-500 transition-colors hover:text-green-800"
           type="button"
           onClick={() => navigate("/registro")}
         >
-          ¿No tenés cuenta?{" "}
-          <span className="font-bold underline">Registrate acá</span>
+          No tenes cuenta?{" "}
+          <span className="font-bold underline">Registrate aca</span>
         </button>
       </div>
     </div>
   );
-};
+}
 
 export default Login;

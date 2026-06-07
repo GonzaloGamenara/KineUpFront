@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
-import { Calendar, Home, User, Users, X } from "lucide-react";
+import { Building2, Calendar, Home, User, Users, X } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
+import { getUserRoles } from "../../auth/organizationStorage";
 import LogoutButton from "../common/LogoutButton";
 
 const patientTabs = [
@@ -16,11 +17,10 @@ const professionalTabs = [
 ];
 
 export default function MobileDrawerNavigation({ open, onClose }) {
-  const { user } = useAuth();
+  const { user, activeOrganization, professionalOrganizations } = useAuth();
+  const isProfessional = getUserRoles(user).includes("Profesional");
 
-  const tabs = user?.roles?.includes("Profesional")
-    ? professionalTabs
-    : patientTabs;
+  const tabs = isProfessional ? professionalTabs : patientTabs;
 
   return (
     <>
@@ -44,6 +44,11 @@ export default function MobileDrawerNavigation({ open, onClose }) {
             <h2 className="mt-1 text-lg font-bold text-slate-900">
               {user?.apellido} {user?.nombre?.[0]}.
             </h2>
+            {isProfessional && activeOrganization && (
+              <p className="mt-1 max-w-44 truncate text-xs font-semibold text-emerald-700">
+                {activeOrganization.nombre}
+              </p>
+            )}
           </div>
 
           <button
@@ -74,6 +79,17 @@ export default function MobileDrawerNavigation({ open, onClose }) {
               {label}
             </NavLink>
           ))}
+
+          {isProfessional && professionalOrganizations.length > 1 && (
+            <NavLink
+              to="/profesional/organizacion"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500"
+            >
+              <Building2 size={21} />
+              Cambiar organizacion
+            </NavLink>
+          )}
         </nav>
 
         <LogoutButton />

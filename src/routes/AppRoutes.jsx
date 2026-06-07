@@ -1,6 +1,7 @@
 // src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router";
 import Login from "../components/common/Login";
+import AdminProfesionales from "../views/admin/AdminProfesionales.jsx";
 import HomePaciente from "../views/paciente/HomePaciente.jsx";
 import AppLayout from "../components/layout/AppLayout.jsx";
 import { RequireRole } from "../auth/RequireRole.jsx";
@@ -24,6 +25,7 @@ import CrearEtapaPlantilla from "../views/profesional/CrearEtapaPlantilla.jsx";
 import CrearRutinaPlantilla from "../views/profesional/CrearRutinaPlantilla.jsx";
 import SeleccionarEjerciciosPlantilla from "../views/profesional/SeleccionarEjerciciosPlantilla.jsx";
 import ConfirmarPlantillaTratamiento from "../views/profesional/ConfirmarPlantillaTratamiento.jsx";
+import SeleccionarOrganizacion from "../views/profesional/SeleccionarOrganizacion.jsx";
 
 export default function AppRoutes() {
   return (
@@ -36,10 +38,10 @@ export default function AppRoutes() {
       <Route path="/registrar-paciente" element={<Navigate to="/registro" replace />} />
 
       <Route element={<RequireRole roles={["Admin"]} />}>
-        <Route path="/admin/home" element={<EnConstruccion />} />
+        <Route path="/admin/home" element={<AdminProfesionales />} />
       </Route>
 
-      <Route element={<RequireRole roles={["Paciente", "Admin"]} />}>
+      <Route element={<RequireRole roles={["Paciente"]} />}>
         <Route path="/paciente" element={<AppLayout />}>
           <Route index element={<Navigate to="home" replace />} />
 
@@ -50,7 +52,12 @@ export default function AppRoutes() {
         </Route>
       </Route>
 
-      <Route element={<RequireRole roles={["Profesional", "Admin"]} />}>
+      <Route element={<RequireRole roles={["Profesional"]} />}>
+        <Route
+          path="/profesional/organizacion"
+          element={<SeleccionarOrganizacion />}
+        />
+
         <Route path="/profesional" element={<AppLayout />}>
           <Route index element={<Navigate to="home" replace />} />
 

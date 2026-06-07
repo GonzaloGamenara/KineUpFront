@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  Building2,
   CheckCircle,
   Clock,
   Loader2,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { httpClient } from "../../api/httpClient";
 import { useAuth } from "../../auth/AuthContext";
+import { getUserRoles } from "../../auth/organizationStorage";
 
 export default function Vincular() {
   const { token } = useParams();
@@ -21,7 +23,7 @@ export default function Vincular() {
   const [estado, setEstado] = useState("preview-loading");
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
-  const esPaciente = Boolean(user?.roles?.includes("Paciente"));
+  const esPaciente = getUserRoles(user).includes("Paciente");
 
   useEffect(() => {
     if (!loadingAuth && !user) {
@@ -147,6 +149,9 @@ export default function Vincular() {
                 {preview?.email && (
                   <InfoLine icon={Mail} text={preview.email} />
                 )}
+                {preview?.organizacion && (
+                  <InfoLine icon={Building2} text={preview.organizacion} />
+                )}
                 {fechaExpiracion && (
                   <InfoLine
                     icon={Clock}
@@ -260,6 +265,8 @@ function InfoLine({ icon: Icon, text }) {
 function normalizarPreview(data) {
   return {
     idProfesional: data?.idProfesional ?? data?.IdProfesional,
+    idOrganizacion: data?.idOrganizacion ?? data?.IdOrganizacion,
+    organizacion: data?.organizacion ?? data?.Organizacion ?? "",
     nombreCompleto: data?.nombreCompleto ?? data?.NombreCompleto ?? "",
     email: data?.email ?? data?.Email ?? "",
     fechaExpiracion: data?.fechaExpiracion ?? data?.FechaExpiracion ?? null,
