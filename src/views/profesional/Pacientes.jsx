@@ -15,15 +15,39 @@ const calcularEdad = (fecha) => {
   return `${edad} años`;
 };
 
-const EstadoBadge = ({ estado = "En tratamiento" }) => {
-  const abandonado = estado.toLowerCase().includes("abandono");
+const getPacienteVinculado = (paciente) => {
+  const estadoVinculo =
+    paciente?.vinculacionActiva ??
+    paciente?.VinculacionActiva ??
+    paciente?.vinculadoActualmente ??
+    paciente?.VinculadoActualmente ??
+    paciente?.vinculacionVigente ??
+    paciente?.VinculacionVigente ??
+    paciente?.estaVinculado ??
+    paciente?.EstaVinculado ??
+    paciente?.vinculado ??
+    paciente?.Vinculado ??
+    paciente?.activo ??
+    paciente?.Activo;
 
+  if (typeof estadoVinculo === "boolean") return estadoVinculo;
+  if (typeof estadoVinculo === "string") {
+    return estadoVinculo.toLowerCase() === "true";
+  }
+
+  return true;
+};
+
+const getEstadoPaciente = (paciente) =>
+  getPacienteVinculado(paciente) ? "Vinculado" : "No vinculado";
+
+const EstadoBadge = ({ vinculado = true }) => {
   return (
     <span
       className={`inline-flex h-2.5 w-2.5 rounded-full ${
-        abandonado ? "bg-red-500" : "bg-yellow-400"
+        vinculado ? "bg-emerald-500" : "bg-slate-300"
       }`}
-      title={estado}
+      title={vinculado ? "Vinculado" : "No vinculado"}
     />
   );
 };
@@ -83,7 +107,7 @@ export default function Pacientes() {
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            {pacientes.length} pacientes vinculados.
+            {pacientes.length} pacientes en historial.
           </p>
         </div>
 
@@ -123,31 +147,38 @@ export default function Pacientes() {
       ) : (
         <>
           <div className="space-y-3 md:hidden">
-            {pacientesFiltrados.map((paciente) => (
-              <button
-                key={paciente.idPaciente}
-                onClick={() => irAFicha(paciente)}
-                className="w-full rounded-2xl bg-white p-4 text-left shadow-sm active:scale-[0.99]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-bold text-slate-900">
-                      {paciente.nombreCompleto}
-                    </h2>
+            {pacientesFiltrados.map((paciente) => {
+              const vinculado = getPacienteVinculado(paciente);
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      {paciente.email}
-                    </p>
+              return (
+                <button
+                  key={paciente.idPaciente}
+                  onClick={() => irAFicha(paciente)}
+                  className="w-full rounded-2xl bg-white p-4 text-left shadow-sm active:scale-[0.99]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="font-bold text-slate-900">
+                        {paciente.nombreCompleto}
+                      </h2>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {paciente.email}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                      <EstadoBadge vinculado={vinculado} />
+                      {getEstadoPaciente(paciente)}
+                    </div>
                   </div>
 
-                  <EstadoBadge estado={paciente.estado ?? "En tratamiento"} />
-                </div>
-
-                <p className="mt-3 text-sm font-medium text-slate-600">
-                  {calcularEdad(paciente.fechaNacimiento)}
-                </p>
-              </button>
-            ))}
+                  <p className="mt-3 text-sm font-medium text-slate-600">
+                    {calcularEdad(paciente.fechaNacimiento)}
+                  </p>
+                </button>
+              );
+            })}
           </div>
 
           <div className="hidden overflow-hidden rounded-[2rem] bg-white shadow-sm md:block">
@@ -162,32 +193,36 @@ export default function Pacientes() {
               </thead>
 
               <tbody>
-                {pacientesFiltrados.map((paciente) => (
-                  <tr
-                    key={paciente.idPaciente}
-                    onClick={() => irAFicha(paciente)}
-                    className="cursor-pointer border-t border-slate-100 transition hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-4 font-bold text-slate-900">
-                      {paciente.nombreCompleto}
-                    </td>
+                {pacientesFiltrados.map((paciente) => {
+                  const vinculado = getPacienteVinculado(paciente);
 
-                    <td className="px-6 py-4 text-slate-500">
-                      {paciente.email}
-                    </td>
+                  return (
+                    <tr
+                      key={paciente.idPaciente}
+                      onClick={() => irAFicha(paciente)}
+                      className="cursor-pointer border-t border-slate-100 transition hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-4 font-bold text-slate-900">
+                        {paciente.nombreCompleto}
+                      </td>
 
-                    <td className="px-6 py-4 text-slate-600">
-                      {calcularEdad(paciente.fechaNacimiento)}
-                    </td>
+                      <td className="px-6 py-4 text-slate-500">
+                        {paciente.email}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                        <EstadoBadge estado={paciente.estado ?? "En tratamiento"} />
-                        {paciente.estado ?? "En tratamiento"}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-4 text-slate-600">
+                        {calcularEdad(paciente.fechaNacimiento)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                          <EstadoBadge vinculado={vinculado} />
+                          {getEstadoPaciente(paciente)}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

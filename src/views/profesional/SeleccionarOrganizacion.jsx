@@ -13,10 +13,10 @@ export default function SeleccionarOrganizacion() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (activeOrganization || professionalOrganizations.length === 1) {
+    if (professionalOrganizations.length <= 1) {
       navigate("/profesional/home", { replace: true });
     }
-  }, [activeOrganization, navigate, professionalOrganizations.length]);
+  }, [navigate, professionalOrganizations.length]);
 
   const seleccionar = (organization) => {
     selectOrganization(organization);
@@ -36,31 +36,45 @@ export default function SeleccionarOrganizacion() {
           <h1 className="text-2xl font-bold text-slate-900">
             Elegi una organizacion
           </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Selecciona el consultorio con el que queres trabajar en esta sesion.
-          </p>
         </div>
 
         <div className="mt-6 space-y-3">
-          {professionalOrganizations.map((organization) => (
-            <button
-              key={organization.idOrganizacion}
-              type="button"
-              onClick={() => seleccionar(organization)}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50"
-            >
-              <div>
-                <p className="text-sm font-bold text-slate-900">
-                  {organization.nombre}
-                </p>
-                <p className="mt-1 text-xs font-medium text-slate-500">
-                  ID {organization.idOrganizacion}
-                </p>
-              </div>
+          {professionalOrganizations.map((organization) => {
+            const isActive =
+              String(activeOrganization?.idOrganizacion) ===
+              String(organization.idOrganizacion);
 
-              <CheckCircle2 className="shrink-0 text-emerald-600" size={22} />
-            </button>
-          ))}
+            return (
+              <button
+                key={organization.idOrganizacion}
+                type="button"
+                onClick={() => seleccionar(organization)}
+                className={`flex w-full items-center justify-between gap-3 rounded-2xl border p-4 text-left transition ${
+                  isActive
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-slate-100 bg-slate-50 hover:border-emerald-200 hover:bg-emerald-50"
+                }`}
+              >
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    {organization.nombre}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    {isActive
+                      ? "Organizacion activa"
+                      : `ID ${organization.idOrganizacion}`}
+                  </p>
+                </div>
+
+                {isActive && (
+                  <CheckCircle2
+                    className="shrink-0 text-emerald-600"
+                    size={22}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

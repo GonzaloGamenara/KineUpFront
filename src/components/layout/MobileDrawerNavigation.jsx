@@ -79,18 +79,18 @@ export default function MobileDrawerNavigation({ open, onClose }) {
               {label}
             </NavLink>
           ))}
-
-          {isProfessional && professionalOrganizations.length > 1 && (
-            <NavLink
-              to="/profesional/organizacion"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500"
-            >
-              <Building2 size={21} />
-              Cambiar organizacion
-            </NavLink>
-          )}
         </nav>
+
+        {isProfessional && professionalOrganizations.length > 1 && (
+          <NavLink
+            to="/profesional/organizacion"
+            onClick={onClose}
+            className="mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500"
+          >
+            <Building2 size={21} />
+            Cambiar organizacion
+          </NavLink>
+        )}
 
         <LogoutButton />
       </aside>

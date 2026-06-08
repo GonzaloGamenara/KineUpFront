@@ -4,6 +4,29 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, Mail, CalendarDays, User, BadgeCheck, UserX } from "lucide-react";
 import { httpClient } from "../../api/httpClient";
 
+const getPacienteVinculado = (paciente) => {
+  const estadoVinculo =
+    paciente?.vinculacionActiva ??
+    paciente?.VinculacionActiva ??
+    paciente?.vinculadoActualmente ??
+    paciente?.VinculadoActualmente ??
+    paciente?.vinculacionVigente ??
+    paciente?.VinculacionVigente ??
+    paciente?.estaVinculado ??
+    paciente?.EstaVinculado ??
+    paciente?.vinculado ??
+    paciente?.Vinculado ??
+    paciente?.activo ??
+    paciente?.Activo;
+
+  if (typeof estadoVinculo === "boolean") return estadoVinculo;
+  if (typeof estadoVinculo === "string") {
+    return estadoVinculo.toLowerCase() === "true";
+  }
+
+  return true;
+};
+
 export default function DetallePaciente() {
   const { idPaciente } = useParams();
   const navigate = useNavigate();
@@ -48,6 +71,8 @@ export default function DetallePaciente() {
 
   if (!paciente) return <p className="text-sm text-slate-500">Paciente no encontrado.</p>;
 
+  const pacienteVinculado = getPacienteVinculado(paciente);
+
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -59,11 +84,13 @@ export default function DetallePaciente() {
           Volver
         </button>
 
-        <DesvincularPacienteButton
-          onClick={() => setShowConfirmDesvincular(true)}
-          disabled={desvinculando}
-          className="hidden sm:inline-flex"
-        />
+        {pacienteVinculado && (
+          <DesvincularPacienteButton
+            onClick={() => setShowConfirmDesvincular(true)}
+            disabled={desvinculando}
+            className="hidden sm:inline-flex"
+          />
+        )}
       </div>
 
       <div className="rounded-[2rem] bg-white p-5 shadow-sm">
@@ -73,7 +100,10 @@ export default function DetallePaciente() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-emerald-700">Paciente</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-emerald-700">Paciente</p>
+              <VinculacionStatusPill vinculado={pacienteVinculado} />
+            </div>
             <h1 className="text-2xl font-bold text-slate-900">
               {paciente.nombreCompleto}
             </h1>
@@ -81,11 +111,13 @@ export default function DetallePaciente() {
         </div>
       </div>
 
-      <DesvincularPacienteButton
-        onClick={() => setShowConfirmDesvincular(true)}
-        disabled={desvinculando}
-        className="inline-flex w-full sm:hidden"
-      />
+      {pacienteVinculado && (
+        <DesvincularPacienteButton
+          onClick={() => setShowConfirmDesvincular(true)}
+          disabled={desvinculando}
+          className="inline-flex w-full sm:hidden"
+        />
+      )}
 
       <div className="grid gap-3 md:grid-cols-2">
         <InfoCard icon={Mail} label="Email" value={paciente.email} />
@@ -120,6 +152,25 @@ function DesvincularPacienteButton({ onClick, disabled = false, className = "" }
   );
 }
 
+function VinculacionStatusPill({ vinculado }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+        vinculado
+          ? "bg-emerald-50 text-emerald-700"
+          : "bg-slate-100 text-slate-500"
+      }`}
+    >
+      <span
+        className={`h-2 w-2 rounded-full ${
+          vinculado ? "bg-emerald-500" : "bg-slate-300"
+        }`}
+      />
+      {vinculado ? "Vinculado" : "No vinculado"}
+    </span>
+  );
+}
+
 function ConfirmDesvincularDialog({ paciente, loading, onCancel, onConfirm }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-slate-950/40 p-4 sm:items-center sm:justify-center">
@@ -134,8 +185,8 @@ function ConfirmDesvincularDialog({ paciente, loading, onCancel, onConfirm }) {
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
               Vas a desvincular a {paciente?.nombreCompleto ?? "este paciente"}.
-              Esta decision no tiene retorno y el paciente dejara de aparecer en
-              tu listado.
+              Esta decision no tiene retorno. El vinculo quedara inactivo y el
+              paciente se conservara en el historial.
             </p>
           </div>
         </div>
