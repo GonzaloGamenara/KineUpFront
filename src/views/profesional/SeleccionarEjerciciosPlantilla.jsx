@@ -199,7 +199,7 @@ export default function SeleccionarEjerciciosPlantilla() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
       >
         <ArrowLeft size={18} />
-        Volver a rutina
+        Volver
       </button>
 
       <header className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">

@@ -145,7 +145,7 @@ export default function CrearPlantillaTratamiento() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
       >
         <ArrowLeft size={18} />
-        Volver a tratamientos
+        Volver
       </button>
 
       <header className="rounded-3xl bg-white p-5 shadow-sm">
