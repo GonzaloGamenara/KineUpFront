@@ -165,7 +165,7 @@ export default function Tratamientos() {
             type="button"
             onClick={loadTratamientos}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            className="hidden items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 md:inline-flex"
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
             Actualizar

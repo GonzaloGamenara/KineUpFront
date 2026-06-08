@@ -5,10 +5,6 @@ import LogoutButton from "./LogoutButton";
 const Profile = () => {
   const { user } = useAuth();
 
-  const handleLog = () => {
-    alert("Todavia no anda :)");
-  };
-
   return (
     <section className="text-slate-800 animate-fade-in">
       <div className="mb-6">
@@ -16,7 +12,7 @@ const Profile = () => {
           Mi Perfil
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          Visualizá y actualizá tus datos personales.
+          Consulta tus datos personales.
         </p>
       </div>
 
@@ -31,9 +27,6 @@ const Profile = () => {
             <h2 className="text-xl font-bold text-slate-900">
               {user?.nombre} {user?.apellido}
             </h2>
-            <button className="mt-3 text-emerald-600 text-sm font-semibold hover:text-emerald-800 transition-colors">
-              Cambiar foto de perfil
-            </button>
           </div>
         </div>
 
@@ -45,7 +38,8 @@ const Profile = () => {
             <input
               type="text"
               defaultValue={user?.nombreCompleto}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-slate-50 focus:bg-white"
+              readOnly
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none"
             />
           </div>
 
@@ -56,7 +50,8 @@ const Profile = () => {
             <input
               type="email"
               defaultValue={user?.email}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-slate-50 focus:bg-white"
+              readOnly
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none"
             />
           </div>
 
@@ -66,19 +61,12 @@ const Profile = () => {
             </label>
             <input
               defaultValue={user?.usuario}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-slate-50 focus:bg-white"
+              readOnly
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 outline-none"
             />
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-          <button
-            onClick={handleLog}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm"
-          >
-            Guardar cambios
-          </button>
-        </div>
       </div>
 
       <div className="mt-6">

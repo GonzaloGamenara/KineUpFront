@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { httpClient } from "../../api/httpClient.js";
 import { useAuth } from "../../auth/AuthContext";
 import { handleApiError } from "../../api/handleError.js";
@@ -43,21 +44,32 @@ export default function QRSection() {
 
   return (
     <section className="space-y-5 animate-fade-in">
-      <header className="mb-6">
-        <span className="text-emerald-700 font-semibold text-sm">
-          Profesional
-        </span>
-        <h1 className="text-2xl font-bold text-slate-900 mt-1">
-          Vincular Paciente
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          El paciente puede escanear este codigo para vincularse a tu cuenta.
-        </p>
-        {activeOrganization && (
-          <p className="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-            {activeOrganization.nombre}
+      <header className="mb-6 space-y-4">
+        <button
+          type="button"
+          onClick={() => navigate("/profesional/pacientes")}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
+        >
+          <ArrowLeft size={18} />
+          Volver
+        </button>
+
+        <div>
+          <span className="text-emerald-700 font-semibold text-sm">
+            Profesional
+          </span>
+          <h1 className="text-2xl font-bold text-slate-900 mt-1">
+            Vincular Paciente
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            El paciente puede escanear este codigo para vincularse a tu cuenta.
           </p>
-        )}
+          {activeOrganization && (
+            <p className="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+              {activeOrganization.nombre}
+            </p>
+          )}
+        </div>
       </header>
 
       <div className="rounded-[2rem] bg-white p-6 shadow-sm">

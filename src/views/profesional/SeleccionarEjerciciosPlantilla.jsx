@@ -34,7 +34,8 @@ export default function SeleccionarEjerciciosPlantilla() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const plantilla = state?.plantilla;
-  const etapa = state?.etapa;
+  const etapaIndex = state?.etapaIndex;
+  const etapa = plantilla?.etapas?.[etapaIndex];
   const rutina = state?.rutina;
   const ejerciciosIniciales = state?.ejercicios ?? [];
 
@@ -46,13 +47,18 @@ export default function SeleccionarEjerciciosPlantilla() {
   const [touched, setTouched] = useState(false);
 
   useEffect(() => {
-    if (!plantilla?.titulo || !etapa?.titulo || !rutina?.titulo) {
+    if (
+      !plantilla?.titulo ||
+      !etapa?.titulo ||
+      !rutina?.titulo ||
+      etapaIndex === undefined
+    ) {
       navigate("/profesional/tratamientos/nueva", { replace: true });
       return;
     }
 
     cargarEjercicios();
-  }, [navigate, plantilla, etapa, rutina]);
+  }, [navigate, plantilla, etapa, rutina, etapaIndex]);
 
   const cargarEjercicios = async () => {
     setLoading(true);
@@ -131,7 +137,7 @@ export default function SeleccionarEjerciciosPlantilla() {
 
   const volver = () => {
     navigate("/profesional/tratamientos/nueva/rutina", {
-      state: { plantilla, etapa, rutina, ejercicios: seleccionados },
+      state: { plantilla, etapaIndex, rutina, ejercicios: seleccionados },
     });
   };
 
@@ -146,18 +152,31 @@ export default function SeleccionarEjerciciosPlantilla() {
       return;
     }
 
-    navigate("/profesional/tratamientos/nueva/confirmar", {
+    const rutinaCompleta = {
+      ...rutina,
+      ejercicios: seleccionados.map((ejercicio, index) => ({
+        idEjercicio: Number(ejercicio.idEjercicio),
+        titulo: ejercicio.titulo,
+        musculo: ejercicio.musculo,
+        cantidadSeries: Number(ejercicio.cantidadSeries),
+        cantidadRepeticiones: Number(ejercicio.cantidadRepeticiones),
+        orden: index + 1,
+      })),
+    };
+
+    navigate("/profesional/tratamientos/nueva", {
       state: {
-        plantilla,
-        etapa,
-        rutina,
-        ejercicios: seleccionados.map((ejercicio, index) => ({
-          idEjercicio: Number(ejercicio.idEjercicio),
-          titulo: ejercicio.titulo,
-          cantidadSeries: Number(ejercicio.cantidadSeries),
-          cantidadRepeticiones: Number(ejercicio.cantidadRepeticiones),
-          orden: index + 1,
-        })),
+        plantilla: {
+          ...plantilla,
+          etapas: plantilla.etapas.map((currentEtapa, index) =>
+            index === etapaIndex
+              ? {
+                  ...currentEtapa,
+                  rutinas: [...(currentEtapa.rutinas ?? []), rutinaCompleta],
+                }
+              : currentEtapa
+          ),
+        },
       },
     });
   };
@@ -180,7 +199,7 @@ export default function SeleccionarEjerciciosPlantilla() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
       >
         <ArrowLeft size={18} />
-        Volver a rutina inicial
+        Volver a rutina
       </button>
 
       <header className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
@@ -275,7 +294,7 @@ export default function SeleccionarEjerciciosPlantilla() {
               disabled={!canContinue}
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Continuar
+              Guardar rutina
               <ArrowRight size={18} />
             </button>
             <button
@@ -341,7 +360,7 @@ export default function SeleccionarEjerciciosPlantilla() {
             disabled={!canContinue}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Continuar
+            Guardar rutina
             <ArrowRight size={18} />
           </button>
         </div>

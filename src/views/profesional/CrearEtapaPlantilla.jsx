@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Layers3 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Layers3 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+const createLocalId = () =>
+  globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
 export default function CrearEtapaPlantilla() {
   const navigate = useNavigate();
@@ -44,13 +47,20 @@ export default function CrearEtapaPlantilla() {
 
     if (!canContinue || !plantilla?.titulo) return;
 
-    navigate("/profesional/tratamientos/nueva/rutina", {
+    navigate("/profesional/tratamientos/nueva", {
       state: {
-        plantilla,
-        etapa: {
-          titulo: tituloNormalizado,
-          descripcion: descripcionNormalizada || null,
-          orden: 1,
+        plantilla: {
+          ...plantilla,
+          etapas: [
+            ...(plantilla.etapas ?? []),
+            {
+              idLocal: createLocalId(),
+              titulo: tituloNormalizado,
+              descripcion: descripcionNormalizada || null,
+              orden: (plantilla.etapas?.length ?? 0) + 1,
+              rutinas: [],
+            },
+          ],
         },
       },
     });
@@ -78,12 +88,11 @@ export default function CrearEtapaPlantilla() {
               Nueva plantilla
             </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
-              Etapa inicial
+              Nueva etapa
             </h1>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-              Crea la primera etapa de "{plantilla?.titulo ?? "la plantilla"}".
-              En esta version inicial necesitamos al menos una etapa para poder
-              completar la plantilla.
+              Crea una etapa para "{plantilla?.titulo ?? "la plantilla"}".
+              Despues vas a poder agregarle una o mas rutinas desde el resumen.
             </p>
           </div>
         </div>
@@ -137,8 +146,8 @@ export default function CrearEtapaPlantilla() {
             disabled={!canContinue}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Continuar
-            <ArrowRight size={18} />
+            Guardar etapa
+            <CheckCircle2 size={18} />
           </button>
         </div>
       </form>

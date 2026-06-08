@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Repeat2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const createLocalId = () =>
+  globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
 export default function CrearRutinaPlantilla() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const plantilla = state?.plantilla;
-  const etapa = state?.etapa;
+  const etapaIndex = state?.etapaIndex;
+  const etapa = plantilla?.etapas?.[etapaIndex];
   const rutinaInicial = state?.rutina;
   const ejercicios = state?.ejercicios ?? [];
 
@@ -17,10 +21,10 @@ export default function CrearRutinaPlantilla() {
   const [touched, setTouched] = useState(false);
 
   useEffect(() => {
-    if (!plantilla?.titulo || !etapa?.titulo) {
+    if (!plantilla?.titulo || !etapa?.titulo || etapaIndex === undefined) {
       navigate("/profesional/tratamientos/nueva", { replace: true });
     }
-  }, [navigate, plantilla, etapa]);
+  }, [navigate, plantilla, etapa, etapaIndex]);
 
   const tituloNormalizado = titulo.trim();
   const cantidadNormalizada = Number(cantidadEjecuciones);
@@ -34,8 +38,8 @@ export default function CrearRutinaPlantilla() {
   );
 
   const volver = () => {
-    navigate("/profesional/tratamientos/nueva/etapa", {
-      state: { plantilla, etapa },
+    navigate("/profesional/tratamientos/nueva", {
+      state: { plantilla },
     });
   };
 
@@ -52,11 +56,12 @@ export default function CrearRutinaPlantilla() {
     navigate("/profesional/tratamientos/nueva/ejercicios", {
       state: {
         plantilla,
-        etapa,
+        etapaIndex,
         rutina: {
+          idLocal: createLocalId(),
           titulo: tituloNormalizado,
           cantidadEjecucionesIndicadas: cantidadNormalizada,
-          orden: 1,
+          orden: (etapa.rutinas?.length ?? 0) + 1,
         },
         ejercicios,
       },
@@ -71,7 +76,7 @@ export default function CrearRutinaPlantilla() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
       >
         <ArrowLeft size={18} />
-        Volver a etapa inicial
+        Volver al resumen
       </button>
 
       <header className="rounded-3xl bg-white p-5 shadow-sm">
@@ -85,12 +90,12 @@ export default function CrearRutinaPlantilla() {
               Nueva plantilla
             </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
-              Rutina inicial
+              Nueva rutina
             </h1>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-              Crea la primera rutina para la etapa "{etapa?.titulo ?? "inicial"}".
-              Indica cuantas veces debe completarse esta rutina dentro del
-              circuito indicado por el profesional.
+              Crea una rutina para la etapa "{etapa?.titulo ?? "seleccionada"}".
+              Indica cuantas veces debe completarse dentro del circuito indicado
+              por el profesional.
             </p>
           </div>
         </div>
