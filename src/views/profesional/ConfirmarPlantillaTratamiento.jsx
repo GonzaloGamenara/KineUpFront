@@ -118,7 +118,7 @@ export default function ConfirmarPlantillaTratamiento() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <ArrowLeft size={18} />
-        Volver al editor
+        Volver
       </button>
 
       <header className="rounded-3xl bg-white p-5 shadow-sm">
