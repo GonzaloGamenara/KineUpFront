@@ -11,9 +11,14 @@ const requiresOrganizationHeader = (endpoint) => {
     /^\/api\/profesional\/pacientes\/[^/]+\/desvincular$/,
     /^\/api\/profesional\/home$/,
     /^\/api\/profesional\/pacientes\/[^/]+\/tratamientos$/,
+    /^\/api\/profesional\/pacientes\/[^/]+\/tratamientos\/resumen$/,
+    /^\/api\/profesional\/pacientes\/[^/]+\/tratamientos\/[^/]+\/reemplazo-opciones$/,
     /^\/api\/profesional\/tratamientos-plantilla\/[^/]+\/asignar$/,
+    /^\/api\/profesional\/tratamientos\/[^/]+$/,
+    /^\/api\/profesional\/tratamientos\/[^/]+\/etapas$/,
     /^\/api\/profesional\/tratamientos\/[^/]+\/cancelar$/,
     /^\/api\/profesional\/tratamientos\/[^/]+\/reemplazar$/,
+    /^\/api\/profesional\/tratamientos\/[^/]+\/etapas\/[^/]+\/actual$/,
     /^\/api\/vinculation\/generar-qr$/,
   ].some((pattern) => pattern.test(path));
 };

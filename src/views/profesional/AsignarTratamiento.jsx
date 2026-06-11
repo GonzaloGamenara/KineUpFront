@@ -44,6 +44,18 @@ const getEjercicios = (plantilla) =>
     (rutina) => getValue(rutina, "ejercicios", "Ejercicios") ?? []
   );
 
+const getCantidadEtapas = (plantilla) =>
+  getValue(plantilla, "cantidadEtapas", "CantidadEtapas") ??
+  getEtapas(plantilla).filter(isActivo).length;
+
+const getCantidadRutinas = (plantilla) =>
+  getValue(plantilla, "cantidadRutinas", "CantidadRutinas") ??
+  getRutinas(plantilla).filter(isActivo).length;
+
+const getCantidadEjercicios = (plantilla) =>
+  getValue(plantilla, "cantidadEjercicios", "CantidadEjercicios") ??
+  getEjercicios(plantilla).filter(isActivo).length;
+
 const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
 
 const contieneTexto = (value, search) =>
@@ -72,7 +84,7 @@ export default function AsignarTratamiento() {
     try {
       const [pacienteResponse, plantillasResponse] = await Promise.all([
         httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
-        httpClient.get("/api/profesional/tratamientos-plantilla"),
+        httpClient.get("/api/profesional/tratamientos-plantilla/resumen"),
       ]);
 
       const plantillasData = plantillasResponse?.data ?? plantillasResponse ?? [];
@@ -237,9 +249,9 @@ return (
 }
 
 function PlantillaCard({ plantilla, selected, onSelect }) {
-  const etapas = getEtapas(plantilla).filter(isActivo);
-  const rutinas = getRutinas(plantilla).filter(isActivo);
-  const ejercicios = getEjercicios(plantilla).filter(isActivo);
+  const etapas = getCantidadEtapas(plantilla);
+  const rutinas = getCantidadRutinas(plantilla);
+  const ejercicios = getCantidadEjercicios(plantilla);
 
   return (
     <button
@@ -264,9 +276,9 @@ function PlantillaCard({ plantilla, selected, onSelect }) {
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
-        <CardMetric label="Etapas" value={etapas.length} />
-        <CardMetric label="Rutinas" value={rutinas.length} />
-        <CardMetric label="Ejercicios" value={ejercicios.length} />
+        <CardMetric label="Etapas" value={etapas} />
+        <CardMetric label="Rutinas" value={rutinas} />
+        <CardMetric label="Ejercicios" value={ejercicios} />
       </div>
     </button>
   );

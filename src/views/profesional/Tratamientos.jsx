@@ -53,6 +53,18 @@ const getEjercicios = (tratamiento) =>
     getValue(rutina, "ejercicios", "Ejercicios") ?? []
   );
 
+const getCantidadEtapas = (tratamiento) =>
+  getValue(tratamiento, "cantidadEtapas", "CantidadEtapas") ??
+  getEtapas(tratamiento).filter(isActivo).length;
+
+const getCantidadRutinas = (tratamiento) =>
+  getValue(tratamiento, "cantidadRutinas", "CantidadRutinas") ??
+  getRutinas(tratamiento).filter(isActivo).length;
+
+const getCantidadEjercicios = (tratamiento) =>
+  getValue(tratamiento, "cantidadEjercicios", "CantidadEjercicios") ??
+  getEjercicios(tratamiento).filter(isActivo).length;
+
 const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
 
 const contieneTexto = (value, search) =>
@@ -78,7 +90,7 @@ export default function Tratamientos() {
 
     try {
       const response = await httpClient.get(
-        "/api/profesional/tratamientos-plantilla"
+        "/api/profesional/tratamientos-plantilla/resumen"
       );
       const data = response?.data ?? response ?? [];
       setTratamientos(Array.isArray(data) ? data : []);
@@ -280,9 +292,9 @@ function ErrorState({ message, onRetry }) {
 function TratamientoCard({ tratamiento, deleting, onDelete }) {
   const titulo = getTituloTratamiento(tratamiento);
   const descripcion = getDescripcionTratamiento(tratamiento);
-  const etapas = getEtapas(tratamiento).filter(isActivo);
-  const rutinas = getRutinas(tratamiento).filter(isActivo);
-  const ejercicios = getEjercicios(tratamiento).filter(isActivo);
+  const etapas = getCantidadEtapas(tratamiento);
+  const rutinas = getCantidadRutinas(tratamiento);
+  const ejercicios = getCantidadEjercicios(tratamiento);
 
   return (
     <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
@@ -313,9 +325,9 @@ function TratamientoCard({ tratamiento, deleting, onDelete }) {
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4 text-sm">
-        <CardMetric label="Etapas" value={etapas.length} />
-        <CardMetric label="Rutinas" value={rutinas.length} />
-        <CardMetric label="Ejercicios" value={ejercicios.length} />
+        <CardMetric label="Etapas" value={etapas} />
+        <CardMetric label="Rutinas" value={rutinas} />
+        <CardMetric label="Ejercicios" value={ejercicios} />
       </div>
     </article>
   );

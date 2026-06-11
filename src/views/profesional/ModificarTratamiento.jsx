@@ -41,6 +41,18 @@ const getEjercicios = (plantilla) =>
     (rutina) => getValue(rutina, "ejercicios", "Ejercicios") ?? []
   );
 
+const getCantidadEtapas = (plantilla) =>
+  getValue(plantilla, "cantidadEtapas", "CantidadEtapas") ??
+  getEtapas(plantilla).filter(isActivo).length;
+
+const getCantidadRutinas = (plantilla) =>
+  getValue(plantilla, "cantidadRutinas", "CantidadRutinas") ??
+  getRutinas(plantilla).filter(isActivo).length;
+
+const getCantidadEjercicios = (plantilla) =>
+  getValue(plantilla, "cantidadEjercicios", "CantidadEjercicios") ??
+  getEjercicios(plantilla).filter(isActivo).length;
+
 const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
 
 const getTratamientoId = (tratamiento) =>
@@ -70,7 +82,7 @@ export default function ModificarTratamiento() {
   const [assigning, setAssigning] = useState(false);
   const [paciente, setPaciente] = useState(null);
   const [plantillas, setPlantillas] = useState([]);
-  const [tratamientos, setTratamientos] = useState([]);
+  const [tratamientoOrigen, setTratamientoOrigen] = useState(null);
   const [selectedId, setSelectedId] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [error, setError] = useState("");
@@ -83,18 +95,38 @@ export default function ModificarTratamiento() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pacienteResponse, plantillasResponse, tratamientosResponse] = await Promise.all([
-        httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
-        httpClient.get("/api/profesional/tratamientos-plantilla"),
-        httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
-      ]);
+      if (idTratamientoOrigen) {
+        const opcionesResponse = await httpClient.get(
+          `/api/profesional/pacientes/${idPaciente}/tratamientos/${idTratamientoOrigen}/reemplazo-opciones`
+        );
+        const opciones = opcionesResponse?.data ?? opcionesResponse ?? {};
 
-      const plantillasData = plantillasResponse?.data ?? plantillasResponse ?? [];
-      const tratamientosData =
-        tratamientosResponse?.data ?? tratamientosResponse ?? [];
-      setPaciente(pacienteResponse?.data ?? pacienteResponse ?? null);
-      setPlantillas(Array.isArray(plantillasData) ? plantillasData : []);
-      setTratamientos(Array.isArray(tratamientosData) ? tratamientosData : []);
+        const plantillasData =
+          getValue(opciones, "plantillas", "Plantillas") ?? [];
+
+        setPaciente(getValue(opciones, "paciente", "Paciente") ?? null);
+        setTratamientoOrigen(
+          getValue(opciones, "tratamientoOrigen", "TratamientoOrigen") ?? null
+        );
+        setPlantillas(Array.isArray(plantillasData) ? plantillasData : []);
+      } else {
+        const [resumenResponse, plantillasResponse] = await Promise.all([
+          httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos/resumen`),
+          httpClient.get("/api/profesional/tratamientos-plantilla/resumen"),
+        ]);
+
+        const resumen = resumenResponse?.data ?? resumenResponse ?? {};
+        const plantillasData = plantillasResponse?.data ?? plantillasResponse ?? [];
+        const tratamientosData =
+          getValue(resumen, "tratamientos", "Tratamientos") ?? [];
+        const activos = Array.isArray(tratamientosData)
+          ? tratamientosData.filter(isTratamientoActivo)
+          : [];
+
+        setPaciente(getValue(resumen, "paciente", "Paciente") ?? null);
+        setPlantillas(Array.isArray(plantillasData) ? plantillasData : []);
+        setTratamientoOrigen(activos.length === 1 ? activos[0] : null);
+      }
       setError("");
     } catch (err) {
       console.error("Error al cargar modificación de tratamiento:", err);
@@ -115,22 +147,6 @@ export default function ModificarTratamiento() {
   const selectedTemplate = plantillas.find(
     (plantilla) => String(getPlantillaId(plantilla)) === String(selectedId)
   );
-
-  const tratamientosActivos = useMemo(
-    () => tratamientos.filter(isTratamientoActivo),
-    [tratamientos]
-  );
-
-  const tratamientoOrigen = useMemo(() => {
-    if (idTratamientoOrigen) {
-      return tratamientos.find(
-        (tratamiento) =>
-          String(getTratamientoId(tratamiento)) === String(idTratamientoOrigen)
-      );
-    }
-
-    return tratamientosActivos.length === 1 ? tratamientosActivos[0] : null;
-  }, [idTratamientoOrigen, tratamientos, tratamientosActivos]);
 
   const modificarTratamiento = async () => {
     if (!selectedId || !tratamientoOrigen) return;
@@ -292,9 +308,9 @@ export default function ModificarTratamiento() {
 }
 
 function PlantillaCard({ plantilla, selected, onSelect }) {
-  const etapas = getEtapas(plantilla).filter(isActivo);
-  const rutinas = getRutinas(plantilla).filter(isActivo);
-  const ejercicios = getEjercicios(plantilla).filter(isActivo);
+  const etapas = getCantidadEtapas(plantilla);
+  const rutinas = getCantidadRutinas(plantilla);
+  const ejercicios = getCantidadEjercicios(plantilla);
 
   return (
     <button
@@ -319,9 +335,9 @@ function PlantillaCard({ plantilla, selected, onSelect }) {
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
-        <CardMetric label="Etapas" value={etapas.length} />
-        <CardMetric label="Rutinas" value={rutinas.length} />
-        <CardMetric label="Ejercicios" value={ejercicios.length} />
+        <CardMetric label="Etapas" value={etapas} />
+        <CardMetric label="Rutinas" value={rutinas} />
+        <CardMetric label="Ejercicios" value={ejercicios} />
       </div>
     </button>
   );

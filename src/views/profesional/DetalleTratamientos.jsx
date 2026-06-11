@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowLeft, PencilLine, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  GitBranch,
+  Layers3,
+  PencilLine,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { httpClient } from "../../api/httpClient.js";
 
@@ -34,6 +43,23 @@ const getTratamientoAvance = (tratamiento) =>
 const getPacienteNombre = (paciente) =>
   getValue(paciente, "nombreCompleto", "NombreCompleto") ?? "Paciente";
 
+const getEtapas = (tratamiento) => getValue(tratamiento, "etapas", "Etapas") ?? [];
+
+const getEtapaId = (etapa) => getValue(etapa, "idEtapa", "IdEtapa");
+
+const getEtapaTitulo = (etapa) =>
+  getValue(etapa, "titulo", "Titulo") ?? "Etapa sin titulo";
+
+const getEtapaDescripcion = (etapa) =>
+  getValue(etapa, "descripcion", "Descripcion") ?? "";
+
+const getEtapaOrden = (etapa) => getValue(etapa, "orden", "Orden") ?? 0;
+
+const getEtapaEsActual = (etapa) =>
+  Boolean(getValue(etapa, "esActual", "EsActual"));
+
+const isActivo = (item) => getValue(item, "activo", "Activo") !== false;
+
 const isVisibleTreatment = (tratamiento) =>
   getTratamientoEstado(tratamiento).toLowerCase() !== "cancelado";
 
@@ -45,6 +71,11 @@ export default function DetalleTratamientos() {
   const [paciente, setPaciente] = useState(null);
   const [tratamientos, setTratamientos] = useState([]);
   const [confirmTarget, setConfirmTarget] = useState(null);
+  const [stageTarget, setStageTarget] = useState(null);
+  const [selectedStageId, setSelectedStageId] = useState(null);
+  const [loadingStageId, setLoadingStageId] = useState(null);
+  const [stageLoadError, setStageLoadError] = useState("");
+  const [changingStage, setChangingStage] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -55,15 +86,13 @@ export default function DetalleTratamientos() {
     setLoading(true);
 
     try {
-      const [pacienteResponse, tratamientosResponse] = await Promise.all([
-        httpClient.get(`/api/profesional/pacientes/${idPaciente}`),
-        httpClient.get(`/api/profesional/pacientes/${idPaciente}/tratamientos`),
-      ]);
+      const resumenResponse = await httpClient.get(
+        `/api/profesional/pacientes/${idPaciente}/tratamientos/resumen`
+      );
+      const resumen = resumenResponse?.data ?? resumenResponse ?? {};
+      const tratamientosData = getValue(resumen, "tratamientos", "Tratamientos") ?? [];
 
-      const tratamientosData =
-        tratamientosResponse?.data ?? tratamientosResponse ?? [];
-
-      setPaciente(pacienteResponse?.data ?? pacienteResponse ?? null);
+      setPaciente(getValue(resumen, "paciente", "Paciente") ?? null);
       setTratamientos(Array.isArray(tratamientosData) ? tratamientosData : []);
       setError("");
     } catch (err) {
@@ -125,6 +154,75 @@ export default function DetalleTratamientos() {
       setError(err?.message || "No se pudo eliminar el tratamiento.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const abrirCambioEtapa = async (tratamiento) => {
+    const idTratamiento = getTratamientoId(tratamiento);
+
+    setStageTarget(tratamiento);
+    setSelectedStageId(null);
+    setStageLoadError("");
+    setLoadingStageId(idTratamiento);
+    setError("");
+
+    try {
+      const etapasResponse = await httpClient.get(
+        `/api/profesional/tratamientos/${idTratamiento}/etapas`
+      );
+      const etapasData = etapasResponse?.data ?? etapasResponse ?? [];
+      const tratamientoDetalle = {
+        ...tratamiento,
+        etapas: Array.isArray(etapasData) ? etapasData : [],
+      };
+      const etapaActual = getEtapas(tratamientoDetalle).find(getEtapaEsActual);
+
+      setStageTarget(tratamientoDetalle);
+      setSelectedStageId(getEtapaId(etapaActual) ?? null);
+    } catch (err) {
+      console.error("Error al cargar detalle del tratamiento:", err);
+      setStageLoadError(
+        err?.message || "No se pudo cargar el detalle del tratamiento."
+      );
+    } finally {
+      setLoadingStageId(null);
+    }
+  };
+
+  const cambiarEtapaActual = async () => {
+    if (!stageTarget || !selectedStageId) return;
+
+    const idTratamiento = getTratamientoId(stageTarget);
+
+    setChangingStage(true);
+    setError("");
+
+    try {
+      const actualizado = await httpClient.patch(
+        `/api/profesional/tratamientos/${idTratamiento}/etapas/${selectedStageId}/actual`
+      );
+      const tratamientoActualizado = actualizado?.data ?? actualizado;
+      const resumenActualizado = { ...(tratamientoActualizado ?? {}) };
+      delete resumenActualizado.etapas;
+      delete resumenActualizado.Etapas;
+
+      setTratamientos((current) =>
+        current.map((tratamiento) =>
+          getTratamientoId(tratamiento) === idTratamiento
+            ? {
+                ...tratamiento,
+                ...resumenActualizado,
+              }
+            : tratamiento
+        )
+      );
+      setStageTarget(null);
+      setSelectedStageId(null);
+    } catch (err) {
+      console.error("Error al cambiar etapa actual:", err);
+      setError(err?.message || "No se pudo cambiar la etapa actual.");
+    } finally {
+      setChangingStage(false);
     }
   };
 
@@ -191,6 +289,8 @@ export default function DetalleTratamientos() {
               key={getTratamientoId(tratamiento)}
               tratamiento={tratamiento}
               deleting={deletingId === getTratamientoId(tratamiento)}
+              loadingStage={loadingStageId === getTratamientoId(tratamiento)}
+              onChangeStage={() => abrirCambioEtapa(tratamiento)}
               onModify={() =>
                 navigate(`/profesional/pacientes/${idPaciente}/modificar-tratamiento`, {
                   state: { idTratamiento: getTratamientoId(tratamiento) },
@@ -216,6 +316,24 @@ export default function DetalleTratamientos() {
           onConfirm={eliminarTratamiento}
         />
       )}
+
+      {stageTarget && (
+        <ChangeStageDialog
+          tratamiento={stageTarget}
+          selectedStageId={selectedStageId}
+          loading={loadingStageId === getTratamientoId(stageTarget)}
+          error={stageLoadError}
+          changing={changingStage}
+          onSelect={setSelectedStageId}
+          onRetry={() => abrirCambioEtapa(stageTarget)}
+          onCancel={() => {
+            setStageTarget(null);
+            setSelectedStageId(null);
+            setStageLoadError("");
+          }}
+          onConfirm={cambiarEtapaActual}
+        />
+      )}
     </section>
   );
 }
@@ -231,8 +349,17 @@ function SummaryItem({ label, value }) {
   );
 }
 
-function TratamientoCard({ tratamiento, deleting, onModify, onDelete }) {
+function TratamientoCard({
+  tratamiento,
+  deleting,
+  loadingStage,
+  onChangeStage,
+  onModify,
+  onDelete,
+}) {
   const progreso = getTratamientoAvance(tratamiento);
+  const isActivoTratamiento =
+    getTratamientoEstado(tratamiento).toLowerCase() === "activo";
 
   return (
     <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
@@ -252,6 +379,17 @@ function TratamientoCard({ tratamiento, deleting, onModify, onDelete }) {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row lg:shrink-0">
+          {isActivoTratamiento && (
+            <button
+              type="button"
+              onClick={onChangeStage}
+              disabled={loadingStage}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <GitBranch size={17} />
+              {loadingStage ? "Cargando..." : "Cambiar etapa"}
+            </button>
+          )}
           <button
             type="button"
             onClick={onModify}
@@ -287,6 +425,144 @@ function TratamientoCard({ tratamiento, deleting, onModify, onDelete }) {
         </div>
       </div>
     </article>
+  );
+}
+
+function ChangeStageDialog({
+  tratamiento,
+  selectedStageId,
+  loading,
+  error,
+  changing,
+  onSelect,
+  onRetry,
+  onCancel,
+  onConfirm,
+}) {
+  const etapas = getEtapas(tratamiento)
+    .filter(isActivo)
+    .sort((a, b) => Number(getEtapaOrden(a)) - Number(getEtapaOrden(b)));
+  const etapaActual = etapas.find(getEtapaEsActual);
+  const etapaSeleccionada = etapas.find(
+    (etapa) => getEtapaId(etapa) === selectedStageId
+  );
+  const sameStage =
+    etapaActual &&
+    etapaSeleccionada &&
+    getEtapaId(etapaActual) === getEtapaId(etapaSeleccionada);
+  const canConfirm =
+    Boolean(etapaSeleccionada) && !sameStage && !changing && !loading && !error;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end bg-slate-950/40 p-4 sm:items-center sm:justify-center">
+      <div className="w-full max-w-2xl rounded-3xl bg-white p-5 shadow-2xl">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <Layers3 size={22} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Cambiar etapa actual
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              El paciente empezara a ver las rutinas de la etapa seleccionada
+              en su circuito activo.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {loading ? (
+            <div className="rounded-2xl bg-slate-50 p-6 text-center">
+              <div className="mx-auto mb-3 h-9 w-9 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-600" />
+              <p className="text-sm font-semibold text-slate-600">
+                Cargando etapas...
+              </p>
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-red-700">{error}</p>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-bold text-red-700 shadow-sm transition hover:bg-red-100"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : etapas.length > 0 ? (
+            etapas.map((etapa) => {
+              const idEtapa = getEtapaId(etapa);
+              const selected = idEtapa === selectedStageId;
+              const actual = getEtapaEsActual(etapa);
+
+              return (
+                <button
+                  key={idEtapa}
+                  type="button"
+                  onClick={() => onSelect(idEtapa)}
+                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                    selected
+                      ? "border-emerald-300 bg-emerald-50"
+                      : "border-slate-100 bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-bold text-slate-900">
+                          {getEtapaTitulo(etapa)}
+                        </p>
+                        {actual && (
+                          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                            Actual
+                          </span>
+                        )}
+                      </div>
+                      {getEtapaDescripcion(etapa) && (
+                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                          {getEtapaDescripcion(etapa)}
+                        </p>
+                      )}
+                    </div>
+                    {selected && (
+                      <CheckCircle2
+                        size={20}
+                        className="shrink-0 text-emerald-700"
+                      />
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <p className="rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-500">
+              Este tratamiento no tiene etapas activas disponibles.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={changing}
+            className="rounded-2xl px-4 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={!canConfirm}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <CheckCircle2 size={18} />
+            {changing ? "Actualizando..." : "Confirmar etapa"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
