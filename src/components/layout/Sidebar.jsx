@@ -2,7 +2,6 @@
 
 import { NavLink } from "react-router-dom";
 import { Building2, Home, Users, Calendar, User } from "lucide-react";
-import logo from "../../assets/logo.png";
 import { useAuth } from "../../auth/AuthContext";
 import { getUserRoles } from "../../auth/organizationStorage";
 import LogoutButton from "../common/LogoutButton";
@@ -27,28 +26,27 @@ export default function Sidebar() {
   const tabs = isProfessional ? professionalTabs : patientTabs;
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col border-r border-slate-100 bg-white px-4 py-6 shadow-sm md:flex">
-      <div className="h-16"> 
-      <h1 className="text-xl text-center font-bold text-slate-500">
-        {user?.apellido} {user?.nombre?.[0]}.
-      </h1>
-      {isProfessional && activeOrganization && (
-        <p className="mt-1 truncate text-center text-xs font-semibold text-emerald-700">
-          {activeOrganization.nombre}
-        </p>
-      )}
-      <hr className="my-6 border-slate-200" />
+    <aside className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-64 flex-col border-r border-slate-100 bg-white shadow-sm md:flex">
+      <div className="flex h-16 shrink-0 flex-col items-center justify-center border-b border-slate-100 px-4">
+        <h1 className="text-center text-xl font-bold text-slate-500">
+          {user?.apellido} {user?.nombre?.[0]}.
+        </h1>
+        {isProfessional && activeOrganization && (
+          <p className="mt-1 max-w-full truncate text-center text-xs font-semibold text-emerald-700">
+            {activeOrganization.nombre}
+          </p>
+        )}
       </div>
-      <nav className="flex flex-1 flex-col gap-2">
+
+      <nav className="flex flex-1 flex-col gap-2 px-4 py-6">
         {tabs.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                isActive
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "text-slate-500 hover:bg-slate-50"
+              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${isActive
+                ? "bg-emerald-50 text-emerald-600"
+                : "text-slate-500 hover:bg-slate-50"
               }`
             }
           >
@@ -61,14 +59,16 @@ export default function Sidebar() {
       {isProfessional && professionalOrganizations.length > 1 && (
         <NavLink
           to="/profesional/organizacion"
-          className="mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50"
+          className="mx-4 mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50"
         >
           <Building2 size={21} />
           Cambiar organizacion
         </NavLink>
       )}
 
-      <LogoutButton />
+      <div className="px-4 pb-6">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }

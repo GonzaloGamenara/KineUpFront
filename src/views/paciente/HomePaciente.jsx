@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
   Check,
   ChevronDown,
   ClipboardList,
@@ -335,6 +336,20 @@ export default function HomePaciente() {
 
   return (
     <section className="space-y-6 animate-fade-in">
+      {tratamientosActivos.length > 1 && (
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedTreatmentId(null);
+            setOpenRoutineId(null);
+          }}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
+        >
+          <ArrowLeft size={18} />
+          Volver a tratamientos
+        </button>
+      )}
+
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Hola de nuevo</h1>
         <p className="mt-1 text-sm font-medium text-slate-500">
@@ -571,9 +586,8 @@ function ExecutionCard({ rutina, execution, actionId, onComplete, onToggleExerci
             >
               <div className="min-w-0">
                 <p
-                  className={`text-sm font-bold ${
-                    checked ? "text-slate-400 line-through" : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${checked ? "text-slate-400 line-through" : "text-slate-800"
+                    }`}
                 >
                   {getExerciseName(exercise)}
                 </p>
@@ -583,11 +597,10 @@ function ExecutionCard({ rutina, execution, actionId, onComplete, onToggleExerci
               </div>
 
               <span
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 text-sm font-bold ${
-                  checked
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 text-sm font-bold ${checked
                     ? "border-emerald-600 bg-emerald-600 text-white"
                     : "border-slate-200 text-transparent"
-                }`}
+                  }`}
               >
                 {updating ? <Loader2 className="animate-spin text-slate-400" size={17} /> : <Check size={17} />}
               </span>
