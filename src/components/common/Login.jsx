@@ -68,7 +68,7 @@ function Login() {
       });
 
       if (!(data?.token ?? data?.Token)) {
-        setError("Credenciales invalidas.");
+        setError("Credenciales inválidas.");
         return;
       }
 
@@ -76,7 +76,7 @@ function Login() {
       const roles = getUserRoles(userData);
 
       if (!roles.length) {
-        setError("Credenciales invalidas.");
+        setError("Credenciales inválidas.");
         return;
       }
 
@@ -88,7 +88,7 @@ function Login() {
       navigate(getDefaultRoute(roles, userData), { replace: true });
     } catch (err) {
       console.error(err);
-      setError("Sin conexion con el servidor.");
+      setError("Sin conexión con el servidor.");
     }
   };
 
@@ -101,7 +101,7 @@ function Login() {
       });
 
       if (!(data?.token ?? data?.Token)) {
-        setError("No se pudo iniciar sesion con Google.");
+        setError("No se pudo iniciar sesión con Google.");
         return;
       }
 
@@ -109,7 +109,7 @@ function Login() {
       const roles = getUserRoles(userData);
 
       if (!roles.length) {
-        setError("No se pudo iniciar sesion con Google.");
+        setError("No se pudo iniciar sesión con Google.");
         return;
       }
 
@@ -117,12 +117,12 @@ function Login() {
       else navigate(getDefaultRoute(roles, userData), { replace: true });
     } catch (err) {
       console.error(err);
-      setError("No se pudo iniciar sesion con Google.");
+      setError("No se pudo iniciar sesión con Google.");
     }
   };
 
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden font-poppins">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-6 font-poppins">
       <AnimatedBackground
         bgColor="#f0fdf4"
         color1="#bbf7d0"
@@ -132,21 +132,28 @@ function Login() {
         speed={3}
       />
 
-      <div className="z-10 flex w-96 flex-col items-center gap-4 rounded-3xl bg-white/70 px-16 py-10 shadow-lg backdrop-blur-sm">
+      <div className="z-10 flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-white/70 bg-white/85 px-6 py-8 shadow-xl shadow-emerald-900/10 backdrop-blur-sm sm:px-10">
         <img
           src={logo}
           alt="KineUp"
-          className="h-16 transition-transform duration-300 hover:scale-105"
+          width="116"
+          height="80"
+          loading="eager"
+          decoding="async"
+          className="h-20 w-auto"
         />
 
         <div className="text-center">
           <h1 className="text-3xl font-bold leading-tight text-green-900">
-            Que bueno verte!
+            Qué bueno verte
           </h1>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Ingresá a tu cuenta para continuar.
+          </p>
         </div>
 
         {error && (
-          <p className="w-full rounded border border-red-100 bg-red-50 p-2 text-xs italic text-red-500">
+          <p className="w-full rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             {error}
           </p>
         )}
@@ -157,9 +164,9 @@ function Login() {
               Usuario
             </label>
             <input
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-700 shadow-sm transition-all focus:border-[#007a3f] focus:outline-none focus:ring-1 focus:ring-[#007a3f]"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-emerald-600"
               type="text"
-              placeholder="Ingresa tu usuario"
+              placeholder="Ingresá tu usuario"
               value={usuario}
               onChange={(event) => setUsuario(event.target.value)}
               required
@@ -168,12 +175,12 @@ function Login() {
 
           <div>
             <label className="mb-1 ml-1 block text-sm font-bold text-gray-700">
-              Contrasena
+              Contraseña
             </label>
             <input
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-700 shadow-sm transition-all focus:border-[#007a3f] focus:outline-none focus:ring-1 focus:ring-[#007a3f]"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-emerald-600"
               type="password"
-              placeholder="**********"
+              placeholder="Ingresá tu contraseña"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
@@ -181,19 +188,19 @@ function Login() {
           </div>
 
           <button
-            className="mt-2 flex cursor-pointer items-center justify-center rounded-lg bg-[#007a3f] py-3 font-bold text-white shadow-md transition-all hover:bg-[#005a2f] hover:shadow-lg active:scale-95"
+            className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-emerald-200 transition active:scale-[0.98]"
             type="submit"
           >
-            Iniciar sesion
+            Iniciar sesión
           </button>
         </form>
 
-        <div className="mt-2 flex w-full items-center">
-          <div className="grow border-t border-gray-300" />
-          <span className="mx-4 text-xs uppercase tracking-widest text-gray-400">
+        <div className="flex w-full items-center gap-3">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
             o bien
           </span>
-          <div className="grow border-t border-gray-300" />
+          <div className="h-px flex-1 bg-slate-200" />
         </div>
 
         <GoogleLoginButton onSuccess={handleGoogleLogin} />
@@ -203,8 +210,10 @@ function Login() {
           type="button"
           onClick={() => navigate("/registro")}
         >
-          No tenes cuenta?{" "}
-          <span className="font-bold underline">Registrate aca</span>
+          ¿No tenés cuenta?{" "}
+          <span className="font-bold text-emerald-700 underline">
+            Registrate acá
+          </span>
         </button>
       </div>
     </div>

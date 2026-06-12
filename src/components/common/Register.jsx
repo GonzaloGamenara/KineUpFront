@@ -76,7 +76,7 @@ export default function Register() {
     try {
       await httpClient.post("/api/User/registrar/paciente", payload);
 
-      setSuccess("Cuenta creada correctamente. Ya podes iniciar sesion.");
+      setSuccess("Cuenta creada correctamente. Ya podés iniciar sesión.");
       setForm(initialForm);
     } catch (err) {
       console.error("Error al registrar usuario:", err);
@@ -119,10 +119,18 @@ export default function Register() {
   };
 
   return (
-    <section className="flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-100 via-white to-emerald-200 px-4 py-3">
-      <div className="w-full max-w-md rounded-[1.75rem] bg-white/95 p-4 shadow-xl md:max-w-xl md:p-5">
-        <div className="mb-4 text-center">
-          <img src={logo} alt="KineUp" className="mx-auto mb-3 h-7" />
+    <section className="flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-100 via-white to-emerald-200 px-4 py-4">
+      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-5 shadow-xl shadow-emerald-900/10 md:max-w-xl md:p-6">
+        <div className="mb-5 text-center">
+          <img
+            src={logo}
+            alt="KineUp"
+            width="93"
+            height="64"
+            loading="eager"
+            decoding="async"
+            className="mx-auto mb-3 h-16 w-auto"
+          />
 
           <h1 className="text-xl font-bold text-slate-900">Crear cuenta</h1>
 
@@ -155,7 +163,7 @@ export default function Register() {
             />
             <Input
               label="Apellido"
-              placeholder="Perez"
+              placeholder="Pérez"
               value={form.apellido}
               onChange={(value) => updateField("apellido", value)}
               required
@@ -171,7 +179,7 @@ export default function Register() {
             required
           />
           <Input
-            label="E-mail"
+            label="Email"
             placeholder="correo@ejemplo.com"
             icon={Mail}
             type="email"
@@ -180,8 +188,8 @@ export default function Register() {
             required
           />
           <Input
-            label="Contrasena"
-            placeholder="Tu contrasena segura"
+            label="Contraseña"
+            placeholder="Tu contraseña segura"
             icon={Lock}
             rightIcon={Eye}
             type="password"
@@ -202,27 +210,25 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading || !canSubmit}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-md shadow-emerald-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 py-3 text-sm font-bold text-white shadow-md shadow-emerald-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && <Loader2 className="animate-spin" size={17} />}
             {loading ? "Creando cuenta..." : "Crear mi cuenta"}
           </button>
         </form>
 
-        <div className="my-3 flex items-center gap-3 text-[11px] text-slate-400">
+        <div className="my-4 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
           <div className="h-px flex-1 bg-slate-200" />
-          O BIEN
+          o bien
           <div className="h-px flex-1 bg-slate-200" />
         </div>
 
-        <div className="flex justify-center">
-          <GoogleLoginButton onSuccess={handleGoogleRegister} />
-        </div>
+        <GoogleLoginButton onSuccess={handleGoogleRegister} />
 
         <p className="mt-3 text-center text-xs text-slate-500">
-          Ya tenes cuenta?{" "}
+          ¿Ya tenés cuenta?{" "}
           <Link to="/login" className="font-bold text-emerald-700 underline">
-            Inicia sesion
+            Iniciá sesión
           </Link>
         </p>
       </div>
@@ -247,7 +253,7 @@ function Input({
         {required && <span className="text-red-500"> *</span>}
       </span>
 
-      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus-within:border-emerald-500">
+      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus-within:border-emerald-500">
         {Icon && <Icon size={16} className="text-slate-400" />}
 
         <input
