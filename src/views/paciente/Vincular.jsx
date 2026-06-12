@@ -27,7 +27,9 @@ export default function Vincular() {
 
   useEffect(() => {
     if (!loadingAuth && !user) {
-      navigate(`/login?returnUrl=${encodeURIComponent(location.pathname)}`, {
+      const returnUrl = `${location.pathname}${location.search}`;
+
+      navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, {
         replace: true,
       });
     }
@@ -59,7 +61,7 @@ export default function Vincular() {
 
         setError(
           err?.message ||
-            "No se pudo obtener la informacion del profesional."
+          "No se pudo obtener la informacion del profesional."
         );
         setEstado("preview-error");
       }

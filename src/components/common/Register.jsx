@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AtSign,
   Calendar,
@@ -27,6 +27,8 @@ const initialForm = {
 export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -76,8 +78,29 @@ export default function Register() {
     try {
       await httpClient.post("/api/User/registrar/paciente", payload);
 
-      setSuccess("Cuenta creada correctamente. Ya podés iniciar sesión.");
-      setForm(initialForm);
+      try {
+        const loginData = await httpClient.post("/api/Auth/login", {
+          usuario: payload.usuario,
+          password: payload.password,
+        });
+
+        if (!(loginData?.token ?? loginData?.Token)) {
+          throw new Error("Login automatico sin token.");
+        }
+
+        await login(loginData);
+        navigate(returnUrl || "/paciente/home", { replace: true });
+      } catch (loginErr) {
+        console.error("Error al iniciar sesión luego del registro:", loginErr);
+        setSuccess("Cuenta creada correctamente. Ya podés iniciar sesión.");
+        setForm(initialForm);
+        navigate(
+          returnUrl
+            ? `/login?returnUrl=${encodeURIComponent(returnUrl)}`
+            : "/login",
+          { replace: true }
+        );
+      }
     } catch (err) {
       console.error("Error al registrar usuario:", err);
       setError(err?.message || "No se pudo crear la cuenta.");
@@ -109,7 +132,7 @@ export default function Register() {
         return;
       }
 
-      navigate("/paciente/home", { replace: true });
+      navigate(returnUrl || "/paciente/home", { replace: true });
     } catch (err) {
       console.error("Error al registrar con Google:", err);
       setError("No se pudo registrar con Google.");
@@ -227,7 +250,14 @@ export default function Register() {
 
         <p className="mt-3 text-center text-xs text-slate-500">
           ¿Ya tenés cuenta?{" "}
-          <Link to="/login" className="font-bold text-emerald-700 underline">
+          <Link
+            to={
+              returnUrl
+                ? `/login?returnUrl=${encodeURIComponent(returnUrl)}`
+                : "/login"
+            }
+            className="font-bold text-emerald-700 underline"
+          >
             Iniciá sesión
           </Link>
         </p>

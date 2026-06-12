@@ -41,6 +41,9 @@ function Login() {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const registerUrl = returnUrl
+    ? `/registro?returnUrl=${encodeURIComponent(returnUrl)}`
+    : "/registro";
 
   useEffect(() => {
     if (loadingAuth || !user) return;
@@ -208,7 +211,7 @@ function Login() {
         <button
           className="mt-2 text-sm text-gray-500 transition-colors hover:text-green-800"
           type="button"
-          onClick={() => navigate("/registro")}
+          onClick={() => navigate(registerUrl)}
         >
           ¿No tenés cuenta?{" "}
           <span className="font-bold text-emerald-700 underline">
